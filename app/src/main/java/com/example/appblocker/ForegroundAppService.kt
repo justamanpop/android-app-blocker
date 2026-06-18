@@ -6,14 +6,18 @@ import android.view.accessibility.AccessibilityEvent
 
 class ForegroundAppService : AccessibilityService() {
 
-    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        if (event == null) return
+    private var lastPackageName: String? = null
 
-        // Only listen for window state changes (when an app comes to foreground)
-        if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-            val packageName = event.packageName?.toString()
-            if (packageName != null) {
-                Log.d("ForegroundAppService", "Foreground app: $packageName")
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        if (event == null || event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+            return
+        }
+
+        val packageName = event.packageName?.toString()
+        if (packageName != null && packageName != lastPackageName) {
+            lastPackageName = packageName
+            if (packageName == "com.android.chrome") {
+                Log.d("ForegroundAppService", "Chrome is in the foreground!")
             }
         }
     }

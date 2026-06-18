@@ -8,6 +8,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.os.Build
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -36,13 +37,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppBlockerTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Log.d("MainActivity", "I started executing at least")
                     val context = LocalContext.current
                     checkAccessibilityPermission(context)
-                    Greeting(
-                        apps = listOf(),
-                        modifier = Modifier.padding(innerPadding).padding(4.dp)
-                    )
+                    checkSystemAlertPermission(context)
+
+                   Text("Hello world", modifier=Modifier.padding(innerPadding))
                 }
             }
         }
@@ -55,20 +54,6 @@ fun AppOverlayer(packageName: String, modifier: Modifier ) {
 
     }, modifier = modifier) {
         Text("Kill $packageName!")
-    }
-}
-
-@Composable
-fun Greeting(apps: List<String>, modifier: Modifier = Modifier) {
-    Text("Number of apps: ${apps.size}")
-    LazyColumn (modifier = Modifier.padding(10.dp)) {
-        items(apps.size) {
-            idx ->
-            Text(
-                text = "${idx + 1} ${apps[idx]}",
-                modifier = modifier
-            )
-        }
     }
 }
 
@@ -85,10 +70,12 @@ fun checkAccessibilityPermission(context: Context) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    AppBlockerTheme {
-        Greeting(listOf())
+fun checkSystemAlertPermission(context: Context) {
+    if (!Settings.canDrawOverlays(context)) {
+        val intent = Intent(
+            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+            "package:${context.packageName}".toUri()
+        )
+        context.startActivity(intent)
     }
 }
