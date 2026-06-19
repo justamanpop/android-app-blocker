@@ -1,5 +1,11 @@
 package com.example.appblocker
 
+import com.example.appblocker.R
+import android.graphics.PixelFormat
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.WindowManager
 import android.accessibilityservice.AccessibilityService
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
@@ -7,6 +13,13 @@ import android.view.accessibility.AccessibilityEvent
 class ForegroundAppService : AccessibilityService() {
 
     private var lastPackageName: String? = null
+    private var windowManager: WindowManager? = null
+    private var overlayView: View? = null
+
+    override fun onCreate() {
+        super.onCreate()
+        windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+    }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         if (event == null || event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
@@ -17,9 +30,52 @@ class ForegroundAppService : AccessibilityService() {
         if (packageName != null && packageName != lastPackageName) {
             lastPackageName = packageName
             if (packageName == "com.android.chrome") {
-                Log.d("ForegroundAppService", "Chrome is in the foreground!")
+                Log.d("ForegroundAppService", "showing overlay, package name is com.android.chrome")
+                showOverlay()
+            } else {
+                Log.d("ForegroundAppService", "hiding overlay, package name is $packageName")
+                //so that when overlay is shown the service doesn't instantly close it
+                if (packageName != "com.example.appblocker") {
+                    hideOverlay()
+                }
             }
         }
+    }
+
+    private fun showOverlay() {
+        Log.d("ForegroundAppService", "Attempting to show overlay")
+        if (overlayView == null) {
+            val inflater = LayoutInflater.from(this)
+            overlayView = inflater.inflate(R.layout.layout_overlay, null)
+
+            val params = WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                PixelFormat.TRANSLUCENT
+            )
+            params.gravity = Gravity.CENTER
+            windowManager?.addView(overlayView, params)
+            Log.d("ForegroundAppService", "Overlay added")
+        } else {
+            Log.d("ForegroundAppService", "Overlay already exists")
+        }
+    }
+
+    private fun hideOverlay() {
+        if (overlayView != null) {
+            Log.d("ForegroundAppService", "Attempting to hide overlay")
+            windowManager?.removeView(overlayView)
+            overlayView = null
+            Log.d("ForegroundAppService", "Overlay removed")
+        }
+    }
+
+    override fun onDestroy() {
+        Log.d("ForegroundAppService", "in onDestroy hook")
+        hideOverlay()
+        super.onDestroy()
     }
 
     override fun onInterrupt() {
