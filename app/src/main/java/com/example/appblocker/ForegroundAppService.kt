@@ -43,32 +43,35 @@ class ForegroundAppService : AccessibilityService() {
     }
 
     private fun showOverlay() {
-        Log.d("ForegroundAppService", "Attempting to show overlay")
         if (overlayView == null) {
             val inflater = LayoutInflater.from(this)
             overlayView = inflater.inflate(R.layout.layout_overlay, null)
+
+            val closeButton = overlayView?.findViewById<View>(R.id.btn_close)
+            closeButton?.setOnClickListener {
+                val homeIntent = android.content.Intent(android.content.Intent.ACTION_MAIN)
+                homeIntent.addCategory(android.content.Intent.CATEGORY_HOME)
+                homeIntent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(homeIntent)
+                hideOverlay()
+            }
 
             val params = WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                 PixelFormat.TRANSLUCENT
             )
             params.gravity = Gravity.CENTER
             windowManager?.addView(overlayView, params)
-            Log.d("ForegroundAppService", "Overlay added")
-        } else {
-            Log.d("ForegroundAppService", "Overlay already exists")
         }
     }
 
     private fun hideOverlay() {
         if (overlayView != null) {
-            Log.d("ForegroundAppService", "Attempting to hide overlay")
             windowManager?.removeView(overlayView)
             overlayView = null
-            Log.d("ForegroundAppService", "Overlay removed")
         }
     }
 
