@@ -1,17 +1,14 @@
 package com.example.appblocker
 
-import com.example.appblocker.R
 import android.graphics.PixelFormat
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.accessibilityservice.AccessibilityService
-import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 
 class ForegroundAppService : AccessibilityService() {
-
     private var lastPackageName: String? = null
     private var windowManager: WindowManager? = null
     private var overlayView: View? = null
@@ -27,15 +24,14 @@ class ForegroundAppService : AccessibilityService() {
         }
 
         val packageName = event.packageName?.toString()
+        //lastPackageName tracking is to prevent multiple events of same window from triggering the action
         if (packageName != null && packageName != lastPackageName) {
             lastPackageName = packageName
             if (packageName == "com.android.chrome") {
-                Log.d("ForegroundAppService", "showing overlay, package name is com.android.chrome")
                 showOverlay()
             } else {
-                Log.d("ForegroundAppService", "hiding overlay, package name is $packageName")
                 //so that when overlay is shown the service doesn't instantly close it
-                if (packageName != "com.example.appblocker") {
+                if (packageName != getString(R.string.app_package_name)) {
                     hideOverlay()
                 }
             }
@@ -76,7 +72,6 @@ class ForegroundAppService : AccessibilityService() {
     }
 
     override fun onDestroy() {
-        Log.d("ForegroundAppService", "in onDestroy hook")
         hideOverlay()
         super.onDestroy()
     }
