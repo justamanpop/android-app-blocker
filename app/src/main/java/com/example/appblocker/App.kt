@@ -13,10 +13,17 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -24,13 +31,27 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import androidx.lifecycle.compose.LocalLifecycleOwner
 
 
 @Composable
 fun App(modifier: Modifier = Modifier) {
+    var permissionCheckCounter by remember { mutableIntStateOf(0) }
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                permissionCheckCounter++
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     val context = LocalContext.current
-    val hasAccessibilityPermission = hasAccessibilityPermission(context)
-    val hasSystemAlertPermission = Settings.canDrawOverlays(context)
+    val hasAccessibilityPermission = remember(permissionCheckCounter) { hasAccessibilityPermission(context) }
+    val hasSystemAlertPermission = remember(permissionCheckCounter) { Settings.canDrawOverlays(context) }
 
     var showPermissionDialog by remember { mutableStateOf(false) }
     if (showPermissionDialog) {
@@ -38,8 +59,14 @@ fun App(modifier: Modifier = Modifier) {
             showAccessibility = !hasAccessibilityPermission,
             showOverlay = !hasSystemAlertPermission,
             onDismiss = { showPermissionDialog = false },
-            onGrantAccessibility = { checkAccessibilityPermission(context) },
-            onGrantOverlay = { checkSystemAlertPermission(context) }
+            onGrantAccessibility = {
+                checkAccessibilityPermission(context)
+                showPermissionDialog = false
+            },
+            onGrantOverlay = {
+                checkSystemAlertPermission(context)
+                showPermissionDialog = false
+            }
         )
     }
 
