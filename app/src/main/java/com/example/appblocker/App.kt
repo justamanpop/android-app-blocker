@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import com.example.appblocker.ui.theme.GreenAction
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.ui.res.stringResource
 
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,7 +40,6 @@ import androidx.core.net.toUri
 fun App(modifier: Modifier = Modifier) {
     var permissionCheckCounter by remember { mutableIntStateOf(0) }
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
@@ -115,11 +115,11 @@ fun PermissionDialog(
                 Text("This app needs permissions to function.")
                 if (showAccessibility) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("• Accessibility: After clicking on the 'Grant Accessibility' button, click on 'Installed apps', select 'AppBlocker', and turn it ON.")
+                    Text("• Accessibility: After clicking on the 'Grant Accessibility' button, click on 'Installed apps', select '${stringResource(R.string.app_name)}', and turn it ON.")
                 }
                 if (showOverlay) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("• Overlay: Click the 'Grant Overlay' button, then click the toggle for AppBlocker.")
+                    Text("• Overlay: Click the 'Grant Overlay' button, then click the toggle for ${stringResource(R.string.app_name)}.")
                 }
             }
         },
