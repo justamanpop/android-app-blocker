@@ -44,12 +44,24 @@ fun App(modifier: Modifier = Modifier) {
     }
 
     if (hasAccessibilityPermission && hasSystemAlertPermission) {
-        Text("App is working! You may close it", fontSize = 16.sp, modifier = modifier.padding(16.dp))
+        Text(
+            "App is working! It will keep running the background, you may close it",
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            modifier = modifier.padding(16.dp)
+        )
     } else {
-        Column(modifier = modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("App does not have required permissions to work. Click button below to grant them", fontSize = 24.sp, textAlign = TextAlign.Center)
+        Column(
+            modifier = modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                "App does not have required permissions to work. Click button below to grant them",
+                fontSize = 24.sp,
+                textAlign = TextAlign.Center
+            )
             Spacer(modifier = Modifier.height(16.dp))
-            Button({showPermissionDialog = true})  {
+            Button({ showPermissionDialog = true }) {
                 Text("Grant permissions")
             }
         }
@@ -76,7 +88,7 @@ fun PermissionDialog(
                 }
                 if (showOverlay) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("• Overlay: Allow 'Display over other apps'.")
+                    Text("• Overlay: Click the 'Grant Overlay' button, then click the toggle for AppBlocker.")
                 }
             }
         },
@@ -94,11 +106,6 @@ fun PermissionDialog(
                 }
             }
         },
-        dismissButton = {
-            Button(onClick = onDismiss) {
-                Text("Close")
-            }
-        }
     )
 }
 
