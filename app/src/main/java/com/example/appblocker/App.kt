@@ -18,9 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 
@@ -28,10 +26,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import com.example.appblocker.ui.theme.GreenAction
+import androidx.compose.material3.ButtonDefaults
+
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+
 import androidx.core.net.toUri
-import androidx.lifecycle.compose.LocalLifecycleOwner
 
 
 @Composable
@@ -88,7 +89,10 @@ fun App(modifier: Modifier = Modifier) {
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(16.dp))
-            Button({ showPermissionDialog = true }) {
+            Button(
+                onClick = { showPermissionDialog = true },
+                colors = ButtonDefaults.buttonColors(containerColor = GreenAction)
+            ) {
                 Text("Grant permissions")
             }
         }
@@ -122,12 +126,20 @@ fun PermissionDialog(
         confirmButton = {
             Column {
                 if (showAccessibility) {
-                    Button(onClick = onGrantAccessibility, modifier = Modifier.fillMaxWidth()) {
+                    Button(
+                        onClick = onGrantAccessibility,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = GreenAction)
+                    ) {
                         Text("Grant Accessibility")
                     }
                 }
                 if (showOverlay) {
-                    Button(onClick = onGrantOverlay, modifier = Modifier.fillMaxWidth()) {
+                    Button(
+                        onClick = onGrantOverlay,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = GreenAction)
+                    ) {
                         Text("Grant Overlay")
                     }
                 }
