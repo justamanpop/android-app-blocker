@@ -11,8 +11,12 @@ lets chrome be blocked without an easy way to remove the block (except uninstall
 ### Permissions needed
 Needs Accessibility service permission, display notification permission (to run as a foreground service so
 the service does not get suspended by android for battery optimization) and display over other apps permissions. 
+
 The app automatically detects if  these permissions are missing and gives you buttons to click to guide you to 
-appropriate setting to grant them
+appropriate setting to grant them, except for accessibility permission, which needs an extra step.
+
+For accessibility permission, need to go to Settings > Apps > App Blocker > Click on 3 dots in top right corner > Click allow first,
+then follow instructions in app to grant the permission.
 
 ### Using it to block other apps
 Currently it blocks a hardcoded list of apps, they are in `getBlockedPackageNames()` function in `ForegroundAppService.kt`.
