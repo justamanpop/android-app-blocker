@@ -9,10 +9,14 @@ Existing app blockers can be bypassed by removing Chrome from list of blocked ap
 lets chrome be blocked without an easy way to remove the block (except uninstalling)
 
 ### Permissions needed
-Needs Accessibility service permission and display over other apps permissions. The app automatically detects if
-these permissions are missing and gives you buttons to click to guide you to appropriate setting to grant them
+Needs Accessibility service permission, display notification permission (to run as a foreground service so
+the service does not get suspended by android for battery optimization) and display over other apps permissions. 
+The app automatically detects if  these permissions are missing and gives you buttons to click to guide you to 
+appropriate setting to grant them
 
-### Using it for other apps
-Replace `com.android.chrome` in ForegroundAppService.kt with package name of whatever app you want to block.
-To block a list of apps, simply create a list of package names to block, then make the condition from
-`if(packageName == "com.android.chrome")` to `if(packageNameList.contains(packageName))`
+### Using it to block other apps
+Currently it blocks a hardcoded list of apps, they are in `getBlockedPackageNames()` function in `ForegroundAppService.kt`.
+Add package names  as needed, or replace implementation with anything else, like reading from local prefs, calling an API,
+etc. to suit your needs.
+
+Note: To get an android app's package name check its URL in the Google Play Store web browser, where the package name appears right after the id= parameter. 

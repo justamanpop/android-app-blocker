@@ -63,7 +63,7 @@ class ForegroundAppService : AccessibilityService() {
         val packageName = event.packageName?.toString()
         if (packageName != null && packageName != lastPackageName) {
             lastPackageName = packageName
-            if (packageName == "com.android.chrome") {
+            if (getBlockedPackageNames().contains(packageName)) {
                 showOverlay()
             } else {
                 if (packageName != getString(R.string.app_package_name)) {
@@ -114,4 +114,8 @@ class ForegroundAppService : AccessibilityService() {
     override fun onInterrupt() {
         // Required, but usually left empty
     }
+}
+
+fun getBlockedPackageNames(): Array<String>{
+    return arrayOf("com.android.chrome")
 }
