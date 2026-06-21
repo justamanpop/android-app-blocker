@@ -6,15 +6,46 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.accessibilityservice.AccessibilityService
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.pm.ServiceInfo
+import android.os.Build
+import androidx.core.app.NotificationCompat
+import android.os.SystemClock
 import android.view.accessibility.AccessibilityEvent
+import androidx.annotation.RequiresApi
 
 class ForegroundAppService : AccessibilityService() {
     private var lastPackageName: String? = null
     private var windowManager: WindowManager? = null
     private var overlayView: View? = null
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     override fun onCreate() {
         super.onCreate()
+        
+        // Setup Foreground Service
+        val channelId = "app_blocker_service"
+        val channel = NotificationChannel(
+            channelId,
+            "App Blocker Service",
+            NotificationManager.IMPORTANCE_LOW
+        )
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(channel)
+
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setContentTitle("App Blocker is Active")
+            .setContentText("Monitoring active apps to block them.")
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .build()
+
+        startForeground(
+            1,
+            notification,
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
+        )
+
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
     }
 
@@ -23,14 +54,18 @@ class ForegroundAppService : AccessibilityService() {
             return
         }
 
+        val eventTime = event.eventTime // Time since boot in ms
+        val currentTime = SystemClock.uptimeMillis()
+        if (currentTime - eventTime > 10000) {
+            return
+        }
+
         val packageName = event.packageName?.toString()
-        //lastPackageName tracking is to prevent multiple events of same window from triggering the action
         if (packageName != null && packageName != lastPackageName) {
             lastPackageName = packageName
             if (packageName == "com.android.chrome") {
                 showOverlay()
             } else {
-                //so that when overlay is shown the service doesn't instantly close it
                 if (packageName != getString(R.string.app_package_name)) {
                     hideOverlay()
                 }

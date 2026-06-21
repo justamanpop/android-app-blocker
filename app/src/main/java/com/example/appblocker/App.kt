@@ -14,10 +14,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -30,6 +31,13 @@ import com.example.appblocker.ui.theme.GreenAction
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.res.stringResource
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -51,6 +59,17 @@ fun App(modifier: Modifier = Modifier) {
     }
 
     val context = LocalContext.current
+    
+    // Request notification permission for Android 13+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val launcher = rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) {}
+        LaunchedEffect(Unit) {
+            launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
     val hasAccessibilityPermission = remember(permissionCheckCounter) { hasAccessibilityPermission(context) }
     val hasSystemAlertPermission = remember(permissionCheckCounter) { Settings.canDrawOverlays(context) }
 
@@ -72,12 +91,16 @@ fun App(modifier: Modifier = Modifier) {
     }
 
     if (hasAccessibilityPermission && hasSystemAlertPermission) {
-        Text(
-            "App is working! It will keep running the background, you may close it",
-            fontSize = 16.sp,
-            textAlign = TextAlign.Center,
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier.padding(16.dp)
-        )
+        ) {
+            Text(
+                "App is working! It will keep running the background, you may close it",
+                fontSize = 16.sp,
+                textAlign = TextAlign.Center
+            )
+        }
     } else {
         Column(
             modifier = modifier.padding(16.dp),
