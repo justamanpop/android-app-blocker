@@ -14,9 +14,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Build
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.setValue
@@ -29,19 +30,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import com.example.appblocker.ui.theme.GreenAction
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.res.stringResource
 
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 
 import androidx.core.net.toUri
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -59,38 +61,40 @@ fun App(modifier: Modifier = Modifier) {
     }
 
     val context = LocalContext.current
-    
-    // Request notification permission for Android 13+
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        val launcher = rememberLauncherForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) {}
-        LaunchedEffect(Unit) {
-            launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
-    }
 
-    val hasAccessibilityPermission = remember(permissionCheckCounter) { hasAccessibilityPermission(context) }
-    val hasSystemAlertPermission = remember(permissionCheckCounter) { Settings.canDrawOverlays(context) }
+    val hasAccessibilityPermission =
+        remember(permissionCheckCounter) { hasAccessibilityPermission(context) }
+    val hasSystemAlertPermission =
+        remember(permissionCheckCounter) { Settings.canDrawOverlays(context) }
+
+    val hasNotificationPermission = remember(permissionCheckCounter) { hasNotificationPermission(context) }
+    val launcher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {}
 
     var showPermissionDialog by remember { mutableStateOf(false) }
     if (showPermissionDialog) {
         PermissionDialog(
             showAccessibility = !hasAccessibilityPermission,
             showOverlay = !hasSystemAlertPermission,
+            showNotification = !hasNotificationPermission,
             onDismiss = { showPermissionDialog = false },
             onGrantAccessibility = {
-                checkAccessibilityPermission(context)
+                requestAccessibilityPermission(context)
                 showPermissionDialog = false
             },
             onGrantOverlay = {
-                checkSystemAlertPermission(context)
+                requestSystemAlertPermission(context)
+                showPermissionDialog = false
+            },
+            {
+                requestNotificationPermission(launcher)
                 showPermissionDialog = false
             }
         )
     }
 
-    if (hasAccessibilityPermission && hasSystemAlertPermission) {
+    if (hasAccessibilityPermission && hasSystemAlertPermission && hasNotificationPermission) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier.padding(16.dp)
@@ -126,9 +130,11 @@ fun App(modifier: Modifier = Modifier) {
 fun PermissionDialog(
     showAccessibility: Boolean,
     showOverlay: Boolean,
+    showNotification: Boolean,
     onDismiss: () -> Unit,
     onGrantAccessibility: () -> Unit,
-    onGrantOverlay: () -> Unit
+    onGrantOverlay: () -> Unit,
+    onGrantNotification: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -138,11 +144,30 @@ fun PermissionDialog(
                 Text("This app needs permissions to function.")
                 if (showAccessibility) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("• Accessibility: After clicking on the 'Grant Accessibility' button, click on 'Installed apps', select '${stringResource(R.string.app_name)}', and turn it ON.")
+                    Text(
+                        "• Accessibility: After clicking on the 'Grant Accessibility' button, click on 'Installed apps', select '${
+                            stringResource(
+                                R.string.app_name
+                            )
+                        }', and turn it ON."
+                    )
                 }
                 if (showOverlay) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("• Overlay: Click the 'Grant Overlay' button, then click the toggle for ${stringResource(R.string.app_name)}.")
+                    Text(
+                        "• Overlay: Click the 'Grant Overlay' button, then click the toggle for ${
+                            stringResource(
+                                R.string.app_name
+                            )
+                        }."
+                    )
+                }
+                if (showNotification) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "• Notification: It will only send ONE notification at start to show it's running. Needed so android doesn't stop the app from running in the background." +
+                                "Click the 'Grant Notification' button, then click allow. "
+                    )
                 }
             }
         },
@@ -166,6 +191,15 @@ fun PermissionDialog(
                         Text("Grant Overlay")
                     }
                 }
+                if (showNotification) {
+                    Button(
+                        onClick = onGrantNotification,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = GreenAction)
+                    ) {
+                        Text("Grant Notification")
+                    }
+                }
             }
         },
     )
@@ -179,17 +213,36 @@ fun hasAccessibilityPermission(context: Context): Boolean {
     ).any { it.id.contains(context.packageName) }
 }
 
-fun checkAccessibilityPermission(context: Context) {
+fun hasNotificationPermission(context: Context): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        // On Android 13+, must check for the POST_NOTIFICATIONS permission
+        ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+    } else {
+        // On Android 12 and below, notifications are granted at install time
+        true
+    }
+}
+
+fun requestAccessibilityPermission(context: Context) {
     val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
     context.startActivity(intent)
 }
 
-fun checkSystemAlertPermission(context: Context) {
+fun requestSystemAlertPermission(context: Context) {
     if (!Settings.canDrawOverlays(context)) {
         val intent = Intent(
             Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
             "package:${context.packageName}".toUri()
         )
         context.startActivity(intent)
+    }
+}
+
+fun requestNotificationPermission(launcher: ManagedActivityResultLauncher<String, Boolean>) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
 }
