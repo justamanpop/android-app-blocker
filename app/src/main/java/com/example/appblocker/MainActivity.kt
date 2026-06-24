@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppBlockerTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                   App( modifier=Modifier.padding(innerPadding))
+                   AppNavigation(modifier = Modifier.padding(innerPadding))
                 }
             }
         }

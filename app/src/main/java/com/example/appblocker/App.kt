@@ -15,11 +15,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import android.Manifest
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -47,7 +49,10 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun App(modifier: Modifier = Modifier) {
+fun App(
+    modifier: Modifier = Modifier,
+    onNavigateToAddApp: () -> Unit
+) {
     var permissionCheckCounter by remember { mutableIntStateOf(0) }
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -67,7 +72,8 @@ fun App(modifier: Modifier = Modifier) {
     val hasSystemAlertPermission =
         remember(permissionCheckCounter) { Settings.canDrawOverlays(context) }
 
-    val hasNotificationPermission = remember(permissionCheckCounter) { hasNotificationPermission(context) }
+    val hasNotificationPermission =
+        remember(permissionCheckCounter) { hasNotificationPermission(context) }
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) {}
@@ -94,35 +100,42 @@ fun App(modifier: Modifier = Modifier) {
         )
     }
 
-    if (hasAccessibilityPermission && hasSystemAlertPermission && hasNotificationPermission) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier.padding(16.dp)
-        ) {
-            Text(
-                "App is working! It will keep running the background, you may close it",
-                fontSize = 16.sp,
-                textAlign = TextAlign.Center
-            )
-        }
-    } else {
-        Column(
-            modifier = modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                "App does not have required permissions to work. Click button below to grant them",
-                fontSize = 24.sp,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = { showPermissionDialog = true },
-                colors = ButtonDefaults.buttonColors(containerColor = GreenAction)
+    Column() {
+        if (hasAccessibilityPermission && hasSystemAlertPermission && hasNotificationPermission) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = modifier.padding(16.dp)
             ) {
-                Text("Grant permissions")
+                Text(
+                    "App is working! It will keep running the background, you may close it",
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+        } else {
+            Column(
+                modifier = modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    "App does not have required permissions to work. Click button below to grant them",
+                    fontSize = 24.sp,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { showPermissionDialog = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = GreenAction)
+                ) {
+                    Text("Grant permissions")
+                }
             }
         }
+
+        Button(onClick = onNavigateToAddApp) {
+            Text("Add to block list")
+        }
+
     }
 }
 
@@ -245,4 +258,8 @@ fun requestNotificationPermission(launcher: ManagedActivityResultLauncher<String
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
+}
+
+fun getAppList(context: Context): List<ApplicationInfo> {
+    return context.packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
 }
