@@ -45,8 +45,11 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 
 import androidx.core.net.toUri
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-
 
 @Composable
 fun App(
@@ -258,8 +261,4 @@ fun requestNotificationPermission(launcher: ManagedActivityResultLauncher<String
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
-}
-
-fun getAppList(context: Context): List<ApplicationInfo> {
-    return context.packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
 }
