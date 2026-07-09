@@ -32,7 +32,6 @@ import kotlinx.coroutines.launch
 //TODO: decide immutability of appIcons map, decide data loading pattern in general for this composable. Current structure feels unsavvy
 data class AddAppToBlockListScreenState(
     val apps: List<ApplicationInfo>,
-    val appIcons: Map<CharSequence, ImageBitmap>,
     val isLoading: Boolean
 )
 
@@ -48,7 +47,7 @@ class AddAppToBlockListScreenViewModelFactory(private val dataStore: DataStore<L
 
 class AddAppToBlockListScreenViewModel(val dataStore: DataStore<List<AppBlockListPreferences>>) : ViewModel() {
     private val _uiState =
-        MutableStateFlow(AddAppToBlockListScreenState(listOf(), mutableMapOf(), isLoading = true))
+        MutableStateFlow(AddAppToBlockListScreenState(listOf(), isLoading = true))
     val uiState = _uiState.asStateFlow()
 
     fun getAppList(pm: PackageManager) {
@@ -76,26 +75,14 @@ class AddAppToBlockListScreenViewModel(val dataStore: DataStore<List<AppBlockLis
             dataStore.updateData { current ->
                  current + AppBlockListPreferences(appName, appPackageName)
             }
-        }
-    }
-
-    fun getAppIcon(
-        apps: List<ApplicationInfo>,
-        labels: List<CharSequence>,
-        pm: PackageManager,
-        index: Int
-    ): ImageBitmap {
-        val appName = labels[index]
-        val valInMap = _uiState.value.appIcons[appName]
-        if (valInMap == null) {
-            val bitmap = apps[index].loadIcon(pm).toBitmap().asImageBitmap()
-            _uiState.update { state ->
-                state.copy(
-                    appIcons = state.appIcons + (labels[index] to bitmap)
-                )
+            val entryToRemove = _uiState.value.apps.find { appInfo ->  appInfo.packageName == appPackageName}
+            if (entryToRemove != null) {
+                _uiState.update { current ->
+                    val newList = current.apps - entryToRemove
+                    current.copy(apps = newList)
+                }
             }
-            return bitmap
+
         }
-        return valInMap
     }
 }
