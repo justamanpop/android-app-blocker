@@ -65,12 +65,18 @@ fun AddAppToBlocklistScreen(viewModel: AddAppToBlockListScreenViewModel = viewMo
             ) {
                 items(uiState.apps.size) { index ->
                     val appName = uiState.apps[index].loadLabel(pm).toString()
-                    Row(Modifier.fillMaxWidth().clickable(onClick = {
-                        viewModel.addAppPackageToBlockList(appName, uiState.apps[index].packageName)
-                        scope.launch {
-                            snackbarHostState.showSnackbar(message = "$appName added to block list!")
-                        }
-                    })) {
+                    Row(Modifier
+                        .fillMaxWidth()
+                        .clickable(onClick = {
+                            viewModel.addAppPackageToBlockList(
+                                appName,
+                                uiState.apps[index].packageName
+                            )
+                            scope.launch {
+                                snackbarHostState.currentSnackbarData?.dismiss()
+                                snackbarHostState.showSnackbar(message = "$appName added to block list!")
+                            }
+                        })) {
                         Text(
                             appName,
                             fontSize = 32.sp,
