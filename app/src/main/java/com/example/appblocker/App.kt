@@ -45,16 +45,12 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 
 import androidx.core.net.toUri
-import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 
 @Composable
 fun App(
     modifier: Modifier = Modifier,
-    onNavigateToAddApp: () -> Unit
+    onNavigateToAddApp: () -> Unit,
+    onNavigateToBlockedList: () -> Unit
 ) {
     var permissionCheckCounter by remember { mutableIntStateOf(0) }
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
@@ -137,6 +133,9 @@ fun App(
 
         Button(onClick = onNavigateToAddApp) {
             Text("Add to block list")
+        }
+        Button(onClick = onNavigateToBlockedList) {
+            Text("View blocked app list")
         }
 
     }

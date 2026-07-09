@@ -1,8 +1,9 @@
 package com.example.appblocker.ui.screens
 
-import android.content.pm.ApplicationInfo
-import android.content.pm.PackageManager
+import android.content.Context
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,20 +11,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 
@@ -45,9 +43,12 @@ fun AddAppToBlocklistScreen(viewModel: AddAppToBlockListScreenViewModel = viewMo
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(uiState.apps.size) { index ->
-                Row() {
+                val appName = uiState.apps[index].loadLabel(pm).toString()
+                Row(Modifier.clickable(onClick = {
+                    viewModel.addAppPackageToBlockList(appName, uiState.apps[index].packageName)
+                })) {
                     Text(
-                        "${uiState.apps[index].loadLabel(pm)}",
+                        appName,
                         fontSize = 32.sp,
                         lineHeight = 32.sp,
                         modifier = Modifier.padding(start = 16.dp)
@@ -63,7 +64,7 @@ fun AddAppToBlocklistScreen(viewModel: AddAppToBlockListScreenViewModel = viewMo
             }
         }
     }
-
+    Spacer(Modifier.height(10.dp))
 }
 
 

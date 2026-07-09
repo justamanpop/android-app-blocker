@@ -14,8 +14,6 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.appblocker.ui.theme.AppBlockerTheme
 
-val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
