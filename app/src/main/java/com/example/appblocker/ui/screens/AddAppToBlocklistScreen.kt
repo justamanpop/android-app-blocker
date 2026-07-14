@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
@@ -58,20 +59,20 @@ fun AddAppToBlocklistScreen(viewModel: AddAppToBlockListScreenViewModel = viewMo
         }
     }) { padding ->
         if (uiState.isLoading) {
-            Text("Loading...")
+            CircularProgressIndicator()
         } else {
             LazyColumn(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(uiState.apps.size) { index ->
-                    val appName = uiState.apps[index].loadLabel(pm).toString()
+                    val appName =uiState.apps[index].appName
                     Row(Modifier
                         .fillMaxWidth()
                         .clickable(onClick = {
                             viewModel.addAppPackageToBlockList(
                                 appName,
-                                uiState.apps[index].packageName
+                                uiState.apps[index].appPackageName
                             )
                             scope.launch {
                                 snackbarHostState.currentSnackbarData?.dismiss()
