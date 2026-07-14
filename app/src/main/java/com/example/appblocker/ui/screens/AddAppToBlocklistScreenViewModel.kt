@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -32,10 +33,12 @@ import kotlinx.coroutines.launch
 //TODO: decide immutability of appIcons map, decide data loading pattern in general for this composable. Current structure feels unsavvy
 data class AddAppToBlockListScreenState(
     val apps: List<ApplicationInfo>,
+    val blockedApps: List<AppBlockListPreferences>,
     val isLoading: Boolean
 )
 
-class AddAppToBlockListScreenViewModelFactory(private val dataStore: DataStore<List<AppBlockListPreferences>>) : ViewModelProvider.Factory {
+class AddAppToBlockListScreenViewModelFactory(private val dataStore: DataStore<List<AppBlockListPreferences>>) :
+    ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(AddAppToBlockListScreenViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
@@ -45,44 +48,48 @@ class AddAppToBlockListScreenViewModelFactory(private val dataStore: DataStore<L
     }
 }
 
-class AddAppToBlockListScreenViewModel(val dataStore: DataStore<List<AppBlockListPreferences>>) : ViewModel() {
-    private val _uiState =
-        MutableStateFlow(AddAppToBlockListScreenState(listOf(), isLoading = true))
-    val uiState = _uiState.asStateFlow()
+class AddAppToBlockListScreenViewModel(val dataStore: DataStore<List<AppBlockListPreferences>>) :
+    ViewModel() {
+    private val _installedApps = MutableStateFlow<List<ApplicationInfo>>(listOf())
+    private val _blockedApps = dataStore.data.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = listOf()
+    )
+
+    val uiState = combine(_installedApps, _blockedApps) { installed, blocked ->
+        AddAppToBlockListScreenState(
+            apps = installed.filterNot { app ->
+                blocked.any {
+                    it.appPackageName == app.packageName
+                }
+            },
+            blockedApps = blocked,
+            isLoading = false,
+        )
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        AddAppToBlockListScreenState(listOf(), listOf(), isLoading = true)
+    )
 
     fun getAppList(pm: PackageManager) {
-        _uiState.update { state ->
+        _installedApps.update { _ ->
             val filteredApps =
                 pm.getInstalledApplications(PackageManager.GET_META_DATA)
-            Log.d("appList",
-                filteredApps.map { app -> app.loadLabel(pm) }.sortedBy { label -> label.toString() }
-                    .toString()
-            )
-            val apps2 = filteredApps.filterNot { app ->
+            filteredApps.filterNot { app ->
                 val isCustomPackage = app.loadLabel(pm).startsWith("com.")
                 isCustomPackage
             }
                 .sortedBy { app: ApplicationInfo -> app.loadLabel(pm).toString() }
-            state.copy(
-                apps = apps2,
-                isLoading = false
-            )
         }
     }
 
     fun addAppPackageToBlockList(appName: String, appPackageName: String) {
         viewModelScope.launch {
             dataStore.updateData { current ->
-                 current + AppBlockListPreferences(appName, appPackageName)
+                current + AppBlockListPreferences(appName, appPackageName)
             }
-            val entryToRemove = _uiState.value.apps.find { appInfo ->  appInfo.packageName == appPackageName}
-            if (entryToRemove != null) {
-                _uiState.update { current ->
-                    val newList = current.apps - entryToRemove
-                    current.copy(apps = newList)
-                }
-            }
-
         }
     }
 }
