@@ -27,10 +27,6 @@ class BlockedAppListScreenViewModelFactory(private val dataStore: DataStore<List
 }
 
 class BlockedAppListScreenViewModel(val dataStore: DataStore<List<AppBlockListPreferences>>) : ViewModel() {
-    init {
-        Log.d("BlockedAppListScreen", "ViewModel instance created: ${System.identityHashCode(this)}")
-    }
-
     val blockedAppPackageListFLow: StateFlow<List<AppBlockListPreferences>> =
         dataStore.data
             .stateIn(

@@ -33,6 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 
+//TODO: add a loading indicator for before page load.
 @Composable
 fun AddAppToBlocklistScreen(viewModel: AddAppToBlockListScreenViewModel = viewModel()) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()

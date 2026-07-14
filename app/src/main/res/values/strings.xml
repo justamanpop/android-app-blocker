@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">App Blocker Beta</string>
-    <string name="app_package_name">com.example.appblocker</string>
+    <string name="app_package_name">com.example.appblockerbeta</string>
     <string name="app_blocked_message">App is blocked!</string>
 </resources>
