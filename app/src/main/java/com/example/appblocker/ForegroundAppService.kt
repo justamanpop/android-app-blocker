@@ -1,28 +1,25 @@
 package com.example.appblocker
 
-import android.graphics.PixelFormat
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.View
-import android.view.WindowManager
 import android.accessibilityservice.AccessibilityService
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.pm.ServiceInfo
+import android.graphics.PixelFormat
 import android.os.Build
-import androidx.core.app.NotificationCompat
 import android.os.SystemClock
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
-import android.util.Log
-
 class ForegroundAppService : AccessibilityService() {
-    private val TAG = "AppBlockerService"
     private var lastPackageName: String? = null
     private var lastBlockedPackageName: String? = null
     private var windowManager: WindowManager? = null
@@ -40,7 +37,6 @@ class ForegroundAppService : AccessibilityService() {
                 val blockedPackageNamesFromPrefs =
                     blockedPackageList.map { blockedPackages -> blockedPackages.appPackageName }
                 blockedPackageNames = blockedPackageNamesFromPrefs.toSet()
-                Log.d(TAG, "Updated blocked apps list: $blockedPackageNames")
             }
         }
 
@@ -70,10 +66,6 @@ class ForegroundAppService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
-        Log.d(
-            TAG,
-            "onAccessibilityEvent: eventType=${event?.eventType}, package=${event?.packageName}"
-        )
         if (event == null || event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             return
         }
@@ -96,15 +88,12 @@ class ForegroundAppService : AccessibilityService() {
         }
 
         if (packageName != null && packageName != lastPackageName) {
-            Log.d(TAG, "Package changed from $lastPackageName to $packageName")
             lastPackageName = packageName
             if (blockedPackageNames.contains(packageName)) {
-                Log.d(TAG, "Blocking $packageName")
                 lastBlockedPackageName = packageName
                 showOverlay()
             } else {
                 if (packageName != getString(R.string.app_package_name)) {
-                    Log.d(TAG, "Hiding overlay for $packageName")
                     hideOverlay()
                 }
             }
@@ -112,7 +101,6 @@ class ForegroundAppService : AccessibilityService() {
     }
 
     private fun showOverlay() {
-        Log.d(TAG, "showOverlay called")
         if (overlayView == null) {
             val inflater = LayoutInflater.from(this)
             overlayView = inflater.inflate(R.layout.layout_overlay, null)
@@ -139,7 +127,6 @@ class ForegroundAppService : AccessibilityService() {
     }
 
     private fun hideOverlay() {
-        Log.d(TAG, "hideOverlay called")
         if (overlayView != null) {
             windowManager?.removeView(overlayView)
             overlayView = null
