@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -24,13 +25,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.appblocker.add
+import com.example.appblocker.delete
 import kotlinx.coroutines.launch
 
 @Composable
-fun BlockedAppListScreen(viewModel: BlockedAppListScreenViewModel) {
+fun BlockedAppListScreen(viewModel: BlockedAppListScreenViewModel, onNavigateToAddApp: () -> Unit) {
     val blockedAppList by viewModel.blockedAppPackageListFLow.collectAsStateWithLifecycle(
         initialValue = setOf()
     )
@@ -47,6 +51,11 @@ fun BlockedAppListScreen(viewModel: BlockedAppListScreenViewModel) {
                     snackbarData = data
                 )
             }
+        },
+        floatingActionButton = {
+            FloatingActionButton(onNavigateToAddApp) {
+                Icon(add, "navigate to add app to blocklist screen")
+            }
         }
     ) { padding ->
         Column(modifier = Modifier.padding(16.dp)) {
@@ -59,15 +68,16 @@ fun BlockedAppListScreen(viewModel: BlockedAppListScreenViewModel) {
                         lineHeight = 32.sp,
                         modifier = Modifier
                             .padding(start = 16.dp)
+                            .weight(9f)
                     )
-                    Spacer(Modifier.weight(1f))
+                    Spacer(Modifier)
                     Icon(
-                        painterResource(android.R.drawable.ic_delete),
+                        delete,
                         "remove from block list",
                         modifier = Modifier
                             .padding(end = 8.dp)
                             .align(Alignment.CenterVertically)
-                            .background(Color.Red)
+                            .weight(1f)
                             .clickable(onClick = {
                                 viewModel.removePackageFromBlockList(
                                     app.appName,

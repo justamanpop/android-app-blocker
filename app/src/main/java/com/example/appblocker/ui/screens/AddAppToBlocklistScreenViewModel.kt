@@ -1,7 +1,9 @@
 package com.example.appblocker.ui.screens
 
+import android.app.Application
 import android.content.pm.PackageManager
 import androidx.datastore.core.DataStore
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -9,6 +11,7 @@ import com.example.appblocker.AppBlockListPreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -18,12 +21,13 @@ import kotlinx.coroutines.withContext
 data class AddAppToBlockListScreenState(
     val apps: List<AppNameInfo>,
     val blockedApps: List<AppBlockListPreferences>,
-    val isLoading: Boolean
 )
 
 data class AppNameInfo(val appName: String, val appPackageName: String)
 
-class AddAppToBlockListScreenViewModelFactory(private val dataStore: DataStore<List<AppBlockListPreferences>>) :
+class AddAppToBlockListScreenViewModelFactory(
+    private val dataStore: DataStore<List<AppBlockListPreferences>>
+) :
     ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(AddAppToBlockListScreenViewModel::class.java)) {
@@ -34,9 +38,12 @@ class AddAppToBlockListScreenViewModelFactory(private val dataStore: DataStore<L
     }
 }
 
-class AddAppToBlockListScreenViewModel(val dataStore: DataStore<List<AppBlockListPreferences>>) :
+class AddAppToBlockListScreenViewModel(
+    val dataStore: DataStore<List<AppBlockListPreferences>>
+) :
     ViewModel() {
     private val _installedApps = MutableStateFlow<List<AppNameInfo>>(listOf())
+    
     private val _blockedApps = dataStore.data.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -51,24 +58,25 @@ class AddAppToBlockListScreenViewModel(val dataStore: DataStore<List<AppBlockLis
                 }
             },
             blockedApps = blocked,
-            isLoading = false,
         )
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
-        AddAppToBlockListScreenState(listOf(), listOf(), isLoading = true)
+        AddAppToBlockListScreenState(listOf(), listOf())
     )
 
     fun getAppList(pm: PackageManager) {
         viewModelScope.launch {
-            val allApps = withContext(Dispatchers.IO) {
-                pm.getInstalledApplications(PackageManager.GET_META_DATA)
+            val processedApps = withContext(Dispatchers.IO) {
+                val allApps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
+                allApps
+                    .map { app -> AppNameInfo(app.loadLabel(pm).toString(), app.packageName) }
+                    .filterNot { app ->
+                        app.appName.startsWith("com.")
+                    }
+                    .sortedBy { app -> app.appName }
             }
-            _installedApps.value = allApps.filterNot { app ->
-                app.loadLabel(pm).startsWith("com.")
-            }
-                .map {app -> AppNameInfo(app.loadLabel(pm).toString(), app.packageName)}
-                .sortedBy { app -> app.appName }
+            _installedApps.value = processedApps
         }
     }
 

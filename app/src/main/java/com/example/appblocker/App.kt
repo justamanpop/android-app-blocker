@@ -15,13 +15,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import android.Manifest
-import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -32,14 +30,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import com.example.appblocker.ui.theme.GreenAction
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.res.stringResource
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -49,8 +45,7 @@ import androidx.core.net.toUri
 @Composable
 fun App(
     modifier: Modifier = Modifier,
-    onNavigateToAddApp: () -> Unit,
-    onNavigateToBlockedList: () -> Unit
+    onNavigateToManageBlockedApps: () -> Unit
 ) {
     var permissionCheckCounter by remember { mutableIntStateOf(0) }
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
@@ -110,6 +105,10 @@ fun App(
                     fontSize = 16.sp,
                     textAlign = TextAlign.Center
                 )
+                Spacer(Modifier.height(24.dp))
+                Button(onClick = onNavigateToManageBlockedApps) {
+                    Text("Manage blocked apps")
+                }
             }
         } else {
             Column(
@@ -131,11 +130,8 @@ fun App(
             }
         }
 
-        Button(onClick = onNavigateToAddApp) {
-            Text("Add to block list")
-        }
-        Button(onClick = onNavigateToBlockedList) {
-            Text("View blocked app list")
+        Button(onClick = onNavigateToManageBlockedApps) {
+            Text("Temp manage blocked apps")
         }
 
     }
