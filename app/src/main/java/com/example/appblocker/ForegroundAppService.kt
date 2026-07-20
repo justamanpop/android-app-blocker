@@ -1,29 +1,45 @@
 package com.example.appblocker
 
-import android.graphics.PixelFormat
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.View
-import android.view.WindowManager
 import android.accessibilityservice.AccessibilityService
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.pm.ServiceInfo
+import android.graphics.PixelFormat
 import android.os.Build
-import androidx.core.app.NotificationCompat
 import android.os.SystemClock
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 class ForegroundAppService : AccessibilityService() {
     private var lastPackageName: String? = null
+    private var lastBlockedPackageName: String? = null
     private var windowManager: WindowManager? = null
     private var overlayView: View? = null
+
+    private var blockedPackageNames: Set<String> = setOf()
+    private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     override fun onCreate() {
         super.onCreate()
-        
+
+        serviceScope.launch {
+            dataStore.data.collect { blockedPackageList ->
+                val blockedPackageNamesFromPrefs =
+                    blockedPackageList.map { blockedPackages -> blockedPackages.appPackageName }
+                blockedPackageNames = blockedPackageNamesFromPrefs.toSet()
+            }
+        }
+
         // Setup Foreground Service
         val channelId = "app_blocker_service"
         val channel = NotificationChannel(
@@ -61,9 +77,20 @@ class ForegroundAppService : AccessibilityService() {
         }
 
         val packageName = event.packageName?.toString()
+
+        /**
+         * sometimes after user clicks close on overlay shown on top of blocked app, there's a "ghost" event of blocked app that is sent.
+         * This makes overlay show again. This check prevents overlay logic from running for 1 second after an app
+         * is blocked and an overlay shows up
+        */
+        if (packageName == lastBlockedPackageName) {
+            return
+        }
+
         if (packageName != null && packageName != lastPackageName) {
             lastPackageName = packageName
-            if (getBlockedPackageNames().contains(packageName)) {
+            if (blockedPackageNames.contains(packageName)) {
+                lastBlockedPackageName = packageName
                 showOverlay()
             } else {
                 if (packageName != getString(R.string.app_package_name)) {
@@ -103,6 +130,11 @@ class ForegroundAppService : AccessibilityService() {
         if (overlayView != null) {
             windowManager?.removeView(overlayView)
             overlayView = null
+
+            serviceScope.launch {
+                kotlinx.coroutines.delay(1000)
+                lastBlockedPackageName = null
+            }
         }
     }
 
@@ -114,8 +146,4 @@ class ForegroundAppService : AccessibilityService() {
     override fun onInterrupt() {
         // Required, but usually left empty
     }
-}
-
-fun getBlockedPackageNames(): Array<String>{
-    return arrayOf("com.android.chrome")
 }

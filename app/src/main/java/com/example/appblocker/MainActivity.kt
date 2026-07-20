@@ -1,5 +1,6 @@
 package com.example.appblocker
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -8,6 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import com.example.appblocker.ui.theme.AppBlockerTheme
 
 class MainActivity : ComponentActivity() {
@@ -17,7 +21,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppBlockerTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                   App( modifier=Modifier.padding(innerPadding))
+                   AppNavigation(modifier = Modifier.padding(innerPadding))
                 }
             }
         }

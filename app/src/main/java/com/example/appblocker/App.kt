@@ -30,24 +30,23 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import com.example.appblocker.ui.theme.GreenAction
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.res.stringResource
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 
 import androidx.core.net.toUri
-import kotlinx.coroutines.launch
-
 
 @Composable
-fun App(modifier: Modifier = Modifier) {
+fun App(
+    modifier: Modifier = Modifier,
+    onNavigateToManageBlockedApps: () -> Unit
+) {
     var permissionCheckCounter by remember { mutableIntStateOf(0) }
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -67,7 +66,8 @@ fun App(modifier: Modifier = Modifier) {
     val hasSystemAlertPermission =
         remember(permissionCheckCounter) { Settings.canDrawOverlays(context) }
 
-    val hasNotificationPermission = remember(permissionCheckCounter) { hasNotificationPermission(context) }
+    val hasNotificationPermission =
+        remember(permissionCheckCounter) { hasNotificationPermission(context) }
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) {}
@@ -94,35 +94,46 @@ fun App(modifier: Modifier = Modifier) {
         )
     }
 
-    if (hasAccessibilityPermission && hasSystemAlertPermission && hasNotificationPermission) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier.padding(16.dp)
-        ) {
-            Text(
-                "App is working! It will keep running the background, you may close it",
-                fontSize = 16.sp,
-                textAlign = TextAlign.Center
-            )
-        }
-    } else {
-        Column(
-            modifier = modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                "App does not have required permissions to work. Click button below to grant them",
-                fontSize = 24.sp,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = { showPermissionDialog = true },
-                colors = ButtonDefaults.buttonColors(containerColor = GreenAction)
+    Column() {
+        if (hasAccessibilityPermission && hasSystemAlertPermission && hasNotificationPermission) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = modifier.padding(16.dp)
             ) {
-                Text("Grant permissions")
+                Text(
+                    "App is working! It will keep running the background, you may close it",
+                    fontSize = 16.sp,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(Modifier.height(24.dp))
+                Button(onClick = onNavigateToManageBlockedApps) {
+                    Text("Manage blocked apps")
+                }
+            }
+        } else {
+            Column(
+                modifier = modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    "App does not have required permissions to work. Click button below to grant them",
+                    fontSize = 24.sp,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { showPermissionDialog = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = GreenAction)
+                ) {
+                    Text("Grant permissions")
+                }
             }
         }
+
+        Button(onClick = onNavigateToManageBlockedApps) {
+            Text("Temp manage blocked apps")
+        }
+
     }
 }
 
