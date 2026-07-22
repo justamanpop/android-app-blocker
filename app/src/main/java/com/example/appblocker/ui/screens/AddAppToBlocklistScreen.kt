@@ -3,6 +3,7 @@ package com.example.appblocker.ui.screens
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularProgressIndicator
@@ -35,9 +37,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.collectAsState
 
 @Composable
 fun AddAppToBlocklistScreen(viewModel: AddAppToBlockListScreenViewModel = viewModel()) {
@@ -52,17 +56,25 @@ fun AddAppToBlocklistScreen(viewModel: AddAppToBlockListScreenViewModel = viewMo
         viewModel.getAppList(pm)
     }
 
-    Scaffold(snackbarHost = {
-        SnackbarHost(hostState = snackbarHostState) { data ->
-            Snackbar(
-                containerColor = Color(0xFF2E7D32),
-                contentColor = Color.White,
-                actionColor = Color.Yellow,
-                snackbarData = data
-            )
+    Scaffold() { padding ->
+        Box(Modifier.zIndex(1f)) {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+            ) { data ->
+                Snackbar(
+                    containerColor = Color(0xFF2E7D32),
+                    contentColor = Color.White,
+                    actionColor = Color.Yellow,
+                    snackbarData = data
+                )
+            }
         }
-    }) { padding ->
-        if (uiState.apps.isEmpty()) {
+
+        val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+        if (state.apps.isEmpty()) {
             Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
             }
@@ -73,17 +85,11 @@ fun AddAppToBlocklistScreen(viewModel: AddAppToBlockListScreenViewModel = viewMo
                     .padding(padding)
             ) {
 
-                var textFieldSearchTerm by remember { mutableStateOf("") }
-                val filteredApps by remember {
-                    derivedStateOf {
-                        viewModel.getFilteredAppPackageList(textFieldSearchTerm)
-                    }
-                }
                 OutlinedTextField(
-                    textFieldSearchTerm, { searchTerm ->
-                        textFieldSearchTerm = searchTerm
+                    state.searchTerm, { searchTerm ->
+                        viewModel.updateSearchTerm(searchTerm)
                     },
-                    placeholder = {Text("Search")},
+                    placeholder = { Text("Search") },
                     singleLine = true,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -100,15 +106,15 @@ fun AddAppToBlocklistScreen(viewModel: AddAppToBlockListScreenViewModel = viewMo
                     verticalArrangement = Arrangement.spacedBy(8.dp),
 
                     ) {
-                    items(filteredApps.size) { index ->
-                        val appName = filteredApps[index].appName
+                    items(state.filteredApps.size) { index ->
+                        val appName = state.filteredApps[index].appName
                         Row(
                             Modifier
                                 .fillMaxWidth()
                                 .clickable(onClick = {
                                     viewModel.addAppPackageToBlockList(
                                         appName,
-                                        filteredApps[index].appPackageName
+                                        state.filteredApps[index].appPackageName
                                     )
                                     scope.launch {
                                         snackbarHostState.currentSnackbarData?.dismiss()

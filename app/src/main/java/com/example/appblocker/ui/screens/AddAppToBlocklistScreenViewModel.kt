@@ -19,6 +19,8 @@ import kotlinx.coroutines.withContext
 data class AddAppToBlockListScreenState(
     val apps: List<AppNameInfo>,
     val blockedApps: List<AppBlockListPreferences>,
+    val searchTerm: String = "",
+    val filteredApps: List<AppNameInfo>,
 )
 
 data class AppNameInfo(val appName: String, val appPackageName: String)
@@ -48,19 +50,25 @@ class AddAppToBlockListScreenViewModel(
         initialValue = listOf()
     )
 
-    val uiState = combine(_installedApps, _blockedApps) { installed, blocked ->
+    private val _searchTerm = MutableStateFlow("")
+
+    val uiState = combine(_installedApps, _blockedApps, _searchTerm) { installed, blocked, searchTerm ->
         AddAppToBlockListScreenState(
-            apps = installed.filterNot { app ->
+            apps = installed,
+            blockedApps = blocked,
+            searchTerm = searchTerm,
+            filteredApps = installed.filterNot { app ->
                 blocked.any {
                     it.appPackageName == app.appPackageName
                 }
-            },
-            blockedApps = blocked,
+            }.filter {
+                app -> app.appName.contains(searchTerm, ignoreCase = true)
+            }
         )
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
-        AddAppToBlockListScreenState(listOf(), listOf())
+        AddAppToBlockListScreenState(listOf(), listOf(), "", listOf())
     )
 
     fun getAppList(pm: PackageManager) {
@@ -78,20 +86,15 @@ class AddAppToBlockListScreenViewModel(
         }
     }
 
-    fun getFilteredAppPackageList(searchTerm: String): List<AppNameInfo> {
-        return _installedApps.value.filter { appNameInfo ->
-            appNameInfo.appName.contains(
-                searchTerm,
-                ignoreCase = true
-            )
-        }
-    }
-
     fun addAppPackageToBlockList(appName: String, appPackageName: String) {
         viewModelScope.launch {
             dataStore.updateData { current ->
                 current + AppBlockListPreferences(appName, appPackageName)
             }
         }
+    }
+
+    fun updateSearchTerm(searchTerm: String) {
+        _searchTerm.update { searchTerm }
     }
 }
