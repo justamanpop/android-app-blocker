@@ -1,9 +1,7 @@
 package com.example.appblocker.ui.screens
 
-import android.app.Application
 import android.content.pm.PackageManager
 import androidx.datastore.core.DataStore
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -11,9 +9,9 @@ import com.example.appblocker.AppBlockListPreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -43,7 +41,7 @@ class AddAppToBlockListScreenViewModel(
 ) :
     ViewModel() {
     private val _installedApps = MutableStateFlow<List<AppNameInfo>>(listOf())
-    
+
     private val _blockedApps = dataStore.data.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -77,6 +75,15 @@ class AddAppToBlockListScreenViewModel(
                     .sortedBy { app -> app.appName }
             }
             _installedApps.value = processedApps
+        }
+    }
+
+    fun getFilteredAppPackageList(searchTerm: String): List<AppNameInfo> {
+        return _installedApps.value.filter { appNameInfo ->
+            appNameInfo.appName.contains(
+                searchTerm,
+                ignoreCase = true
+            )
         }
     }
 

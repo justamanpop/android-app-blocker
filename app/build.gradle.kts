@@ -13,7 +13,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.appblocker"
+        applicationId = "com.example.appblockerbeta"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
