@@ -14,5 +14,4 @@ For accessibility permission, need to go to Settings > Apps > App Blocker > Clic
 then follow instructions in app to grant the permission.
 
 ### Planned Changes
-- Make list of apps on system searchable in the add to block list screen
 - Add some friction to removal of app from block list so that one can't simply remove an app when an urge hits
