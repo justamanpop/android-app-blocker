@@ -129,11 +129,6 @@ fun App(
                 }
             }
         }
-
-        Button(onClick = onNavigateToManageBlockedApps) {
-            Text("Temp manage blocked apps")
-        }
-
     }
 }
 
