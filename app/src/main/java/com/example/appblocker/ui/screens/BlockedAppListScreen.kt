@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalTime::class)
+
 package com.example.appblocker.ui.screens
 
 import androidx.compose.foundation.background
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -31,8 +34,18 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.appblocker.add
 import com.example.appblocker.delete
+import com.example.appblocker.lock_clock
 import kotlinx.coroutines.launch
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
+/**
+ * Number of seconds after an app is added to the block list that user cannot remove it again.
+ */
+val LOCK_DURATION_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS = 120
 @Composable
 fun BlockedAppListScreen(viewModel: BlockedAppListScreenViewModel, onNavigateToAddApp: () -> Unit) {
     val blockedAppList by viewModel.blockedAppPackageListFLow.collectAsStateWithLifecycle(
@@ -61,34 +74,53 @@ fun BlockedAppListScreen(viewModel: BlockedAppListScreenViewModel, onNavigateToA
         Column(modifier = Modifier.padding(16.dp)) {
             Text("Blocked Apps List")
             blockedAppList.forEach { app ->
+                val now = Clock.System.now()
+                val isLocked = (now.epochSeconds - app.addedAt.epochSeconds) < LOCK_DURATION_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         text = app.appName,
                         fontSize = 32.sp,
                         lineHeight = 32.sp,
+                        color = if(isLocked) Color.Gray else Color.White,
                         modifier = Modifier
                             .padding(start = 16.dp)
                             .weight(9f)
                     )
                     Spacer(Modifier)
-                    Icon(
-                        delete,
-                        "remove from block list",
-                        modifier = Modifier
-                            .padding(end = 8.dp)
-                            .align(Alignment.CenterVertically)
-                            .weight(1f)
-                            .clickable(onClick = {
-                                viewModel.removePackageFromBlockList(
-                                    app.appName,
-                                    app.appPackageName
-                                )
-                                scope.launch {
-                                    snackbarHostState.currentSnackbarData?.dismiss()
-                                    snackbarHostState.showSnackbar(message = "${app.appName} removed from block list!")
-                                }
-                            })
-                    )
+                    if (isLocked) {
+                        IconButton(
+                            {}, enabled = false, modifier =
+                                Modifier
+                                    .padding(end = 8.dp)
+                                    .align(Alignment.CenterVertically)
+                                    .weight(1f)
+                        ) {
+                            Icon(
+                                lock_clock,
+                                "cannot remove from blocklist before waiting one day",
+                            )
+                        }
+                    } else {
+                        Icon(
+                            delete,
+                            "remove from block list",
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .align(Alignment.CenterVertically)
+                                .weight(1f)
+                                .clickable(onClick = {
+                                    viewModel.removePackageFromBlockList(
+                                        app.appName,
+                                        app.appPackageName
+                                    )
+                                    scope.launch {
+                                        snackbarHostState.currentSnackbarData?.dismiss()
+                                        snackbarHostState.showSnackbar(message = "${app.appName} removed from block list!")
+                                    }
+                                })
+                        )
+                    }
+
                 }
                 Spacer(Modifier.height(4.dp))
                 HorizontalDivider(color = Color.Gray, thickness = 1.dp)

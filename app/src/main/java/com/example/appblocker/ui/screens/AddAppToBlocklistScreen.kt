@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularProgressIndicator
@@ -25,14 +24,13 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -41,19 +39,23 @@ import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.collectAsState
 
 @Composable
 fun AddAppToBlocklistScreen(viewModel: AddAppToBlockListScreenViewModel = viewModel()) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    val focusRequester = remember { FocusRequester() }
 
     val context = LocalContext.current
     val pm = context.packageManager
     LaunchedEffect(Unit) {
         viewModel.getAppList(pm)
+    }
+    LaunchedEffect(state.apps) {
+        focusRequester.requestFocus()
     }
 
     Scaffold() { padding ->
@@ -71,8 +73,6 @@ fun AddAppToBlocklistScreen(viewModel: AddAppToBlockListScreenViewModel = viewMo
                 )
             }
         }
-
-        val state by viewModel.uiState.collectAsStateWithLifecycle()
 
         if (state.apps.isEmpty()) {
             Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
@@ -94,6 +94,7 @@ fun AddAppToBlocklistScreen(viewModel: AddAppToBlockListScreenViewModel = viewMo
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 4.dp, end = 4.dp)
+                        .focusRequester(focusRequester)
                 )
 
                 Spacer(
