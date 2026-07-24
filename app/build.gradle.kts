@@ -13,7 +13,6 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.appblockerbeta"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -22,6 +21,17 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    flavorDimensions += "default"
+    productFlavors {
+        create("prod") {
+            dimension = "default"
+            applicationId = "com.example.appblocker"
+        }
+        create("beta") {
+            dimension = "default"
+            applicationId = "com.example.appblockerbeta"
+        }
+    }
     buildTypes {
         release {
             isMinifyEnabled = false
