@@ -1,4 +1,4 @@
-package com.example.appblocker.ui.screens
+package com.example.appblocker.ui.screens.addAppToBlockListScreen
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable

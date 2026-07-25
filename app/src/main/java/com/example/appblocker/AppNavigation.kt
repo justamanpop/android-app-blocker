@@ -6,17 +6,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.datastore.core.DataStore
 import androidx.datastore.dataStore
-import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.appblocker.ui.screens.AddAppToBlockListScreenViewModel
-import com.example.appblocker.ui.screens.AddAppToBlockListScreenViewModelFactory
-import com.example.appblocker.ui.screens.AddAppToBlocklistScreen
-import com.example.appblocker.ui.screens.BlockedAppListScreen
-import com.example.appblocker.ui.screens.BlockedAppListScreenViewModelFactory
-import com.example.appblocker.ui.screens.BlockedAppListScreenViewModel
+import com.example.appblocker.ui.screens.addAppToBlockListScreen.AddAppToBlockListScreenViewModel
+import com.example.appblocker.ui.screens.addAppToBlockListScreen.AddAppToBlockListScreenViewModelFactory
+import com.example.appblocker.ui.screens.addAppToBlockListScreen.AddAppToBlocklistScreen
+import com.example.appblocker.ui.screens.blockSetListScreen.BlockSetListScreen
+import com.example.appblocker.ui.screens.blockedAppListScreen.BlockedAppListScreen
+import com.example.appblocker.ui.screens.blockedAppListScreen.BlockedAppListScreenViewModelFactory
+import com.example.appblocker.ui.screens.blockedAppListScreen.BlockedAppListScreenViewModel
 
 val Context.dataStore: DataStore<List<AppBlockListPreferences>> by dataStore(
     fileName = "appBlockList.json",
@@ -28,7 +28,17 @@ fun AppNavigation(modifier: Modifier = Modifier) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "home", modifier = modifier) {
         composable("home") {
-            App(onNavigateToManageBlockedApps = { navController.navigate("blocked_app_list") })
+            App(onNavigateToManageBlockSets = { navController.navigate("block_set_list") })
+        }
+        composable("block_set_list") {
+            BlockSetListScreen()
+        }
+        composable("blocked_app_list") {
+            val viewModel: BlockedAppListScreenViewModel =
+                viewModel(factory = BlockedAppListScreenViewModelFactory(LocalContext.current.dataStore))
+            BlockedAppListScreen(
+                viewModel,
+                onNavigateToAddApp = { navController.navigate("add_to_blocklist") })
         }
         composable("add_to_blocklist") {
             val viewModel: AddAppToBlockListScreenViewModel =
@@ -38,13 +48,6 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                     )
                 )
             AddAppToBlocklistScreen(viewModel)
-        }
-        composable("blocked_app_list") {
-            val viewModel: BlockedAppListScreenViewModel =
-                viewModel(factory = BlockedAppListScreenViewModelFactory(LocalContext.current.dataStore))
-            BlockedAppListScreen(
-                viewModel,
-                onNavigateToAddApp = { navController.navigate("add_to_blocklist") })
         }
     }
 }

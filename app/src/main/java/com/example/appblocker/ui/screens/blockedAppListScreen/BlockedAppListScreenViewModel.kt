@@ -1,4 +1,4 @@
-package com.example.appblocker.ui.screens
+package com.example.appblocker.ui.screens.blockedAppListScreen
 
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
