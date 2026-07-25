@@ -14,6 +14,11 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 
 data class AddAppToBlockListScreenState(
@@ -52,24 +57,25 @@ class AddAppToBlockListScreenViewModel(
 
     private val _searchTerm = MutableStateFlow("")
 
-    val uiState = combine(_installedApps, _blockedApps, _searchTerm) { installed, blocked, searchTerm ->
-        AddAppToBlockListScreenState(
-            apps = installed,
-            blockedApps = blocked,
-            searchTerm = searchTerm,
-            filteredApps = installed.filterNot { app ->
-                blocked.any {
-                    it.appPackageName == app.appPackageName
+    val uiState =
+        combine(_installedApps, _blockedApps, _searchTerm) { installed, blocked, searchTerm ->
+            AddAppToBlockListScreenState(
+                apps = installed,
+                blockedApps = blocked,
+                searchTerm = searchTerm,
+                filteredApps = installed.filterNot { app ->
+                    blocked.any {
+                        it.appPackageName == app.appPackageName
+                    }
+                }.filter { app ->
+                    app.appName.contains(searchTerm, ignoreCase = true)
                 }
-            }.filter {
-                app -> app.appName.contains(searchTerm, ignoreCase = true)
-            }
+            )
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            AddAppToBlockListScreenState(listOf(), listOf(), "", listOf())
         )
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        AddAppToBlockListScreenState(listOf(), listOf(), "", listOf())
-    )
 
     fun getAppList(pm: PackageManager) {
         viewModelScope.launch {
@@ -86,10 +92,15 @@ class AddAppToBlockListScreenViewModel(
         }
     }
 
+    @OptIn(ExperimentalTime::class)
     fun addAppPackageToBlockList(appName: String, appPackageName: String) {
         viewModelScope.launch {
             dataStore.updateData { current ->
-                current + AppBlockListPreferences(appName, appPackageName)
+                current + AppBlockListPreferences(
+                    appName,
+                    appPackageName,
+                    Clock.System.now()
+                )
             }
         }
     }

@@ -13,7 +13,6 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.appblocker"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -22,6 +21,17 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    flavorDimensions += "default"
+    productFlavors {
+        create("prod") {
+            dimension = "default"
+            applicationId = "com.example.appblocker"
+        }
+        create("beta") {
+            dimension = "default"
+            applicationId = "com.example.appblockerbeta"
+        }
+    }
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -51,6 +61,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.datetime)
     implementation(libs.androidx.datastore.preferences)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))

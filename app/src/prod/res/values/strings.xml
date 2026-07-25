@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">App Blocker</string>
+    <string name="app_package_name">com.example.appblocker</string>
+</resources>
