@@ -45,7 +45,7 @@ import kotlin.time.ExperimentalTime
 /**
  * Number of seconds after an app is added to the block list that user cannot remove it again.
  */
-val LOCK_DURATION_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS = 120
+const val LOCK_DURATION_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS = 60*60*24*2
 @Composable
 fun BlockedAppListScreen(viewModel: BlockedAppListScreenViewModel, onNavigateToAddApp: () -> Unit) {
     val blockedAppList by viewModel.blockedAppPackageListFLow.collectAsStateWithLifecycle(
