@@ -35,3 +35,27 @@ object AppBlockListPreferencesSerializer: Serializer<List<AppBlockListPreference
     }
 
 }
+
+@Serializable
+data class AppBlockSetPreferences @OptIn(ExperimentalTime::class) constructor(val id: Int, val name: String, val blockList: List<AppBlockListPreferences>)
+
+
+object AppBlockSetPreferencesSerializer: Serializer<List<AppBlockSetPreferences>> {
+    override val defaultValue: List<AppBlockSetPreferences> = listOf()
+
+    override suspend fun readFrom(input: InputStream): List<AppBlockSetPreferences> {
+        try {
+            return decodeFromString<List<AppBlockSetPreferences>>(input.readBytes().decodeToString())
+        } catch (serialization: SerializationException) {
+            throw CorruptionException("Unable to read App Block List preferences", serialization)
+        }
+    }
+
+    override suspend fun writeTo(
+        t: List<AppBlockSetPreferences>,
+        output: OutputStream
+    ) {
+        output.write(encodeToString(t).encodeToByteArray())
+    }
+
+}
