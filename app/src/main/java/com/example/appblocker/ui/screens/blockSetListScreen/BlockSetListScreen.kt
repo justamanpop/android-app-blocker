@@ -80,9 +80,10 @@ fun BlockSetListScreen(viewModel: BlockSetListScreenViewModel, onNavigateToBlock
                             .align(Alignment.CenterVertically)
                             .weight(1f)
                             .clickable(onClick = {
+                                viewModel.deleteBlockSet(blockSet.id)
                                 scope.launch {
                                     snackbarHostState.currentSnackbarData?.dismiss()
-                                    snackbarHostState.showSnackbar(message = "${blockSet.name} deleted!")
+                                    snackbarHostState.showSnackbar(message = "Block set ${blockSet.name} deleted!")
                                 }
                             })
                     )

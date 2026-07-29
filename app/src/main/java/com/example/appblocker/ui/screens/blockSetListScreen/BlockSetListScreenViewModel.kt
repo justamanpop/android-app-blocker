@@ -13,7 +13,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class BlockSetListScreenViewModelFactory(private val dataStore: DataStore<List<AppBlockSetPreferences>>) : ViewModelProvider.Factory {
+class BlockSetListScreenViewModelFactory(private val dataStore: DataStore<List<AppBlockSetPreferences>>) :
+    ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(BlockSetListScreenViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
@@ -23,7 +24,8 @@ class BlockSetListScreenViewModelFactory(private val dataStore: DataStore<List<A
     }
 }
 
-class BlockSetListScreenViewModel(val dataStore: DataStore<List<AppBlockSetPreferences>>) : ViewModel() {
+class BlockSetListScreenViewModel(val dataStore: DataStore<List<AppBlockSetPreferences>>) :
+    ViewModel() {
     val blockSetsFLow: StateFlow<List<AppBlockSetPreferences>> =
         dataStore.data
             .stateIn(
@@ -31,4 +33,17 @@ class BlockSetListScreenViewModel(val dataStore: DataStore<List<AppBlockSetPrefe
                 started = SharingStarted.WhileSubscribed(5000),
                 initialValue = listOf()
             )
+
+    fun deleteBlockSet(id: Int) {
+        viewModelScope.launch {
+            dataStore.updateData { curr ->
+                val entryToDelete = curr.find { bs -> bs.id == id }
+                if (entryToDelete == null) {
+                    curr
+                } else {
+                    curr - entryToDelete
+                }
+            }
+        }
+    }
 }

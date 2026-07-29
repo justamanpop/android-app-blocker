@@ -13,9 +13,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 
 @Composable
 fun AddBlockSetScreen(viewModel: AddBlockSetScreenViewModel) {
+    val keyboardController = LocalSoftwareKeyboardController.current
     var nameTextFieldValue by remember { mutableStateOf("") }
     Scaffold() {
         innerPadding ->
@@ -24,6 +26,7 @@ fun AddBlockSetScreen(viewModel: AddBlockSetScreenViewModel) {
                 nameTextFieldValue = it
             })
             Button({
+                keyboardController?.hide()
                 viewModel.createBlockSet(nameTextFieldValue)
             }) {
                 Text("Create block set")
