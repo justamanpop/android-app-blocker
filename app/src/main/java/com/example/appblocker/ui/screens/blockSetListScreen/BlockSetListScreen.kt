@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -28,14 +27,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.appblocker.add
 import com.example.appblocker.delete
-import com.example.appblocker.lock_clock
-import com.example.appblocker.ui.screens.blockedAppListScreen.BlockedAppListScreenViewModel
-import com.example.appblocker.ui.screens.blockedAppListScreen.LOCK_DURATION_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS
 import kotlinx.coroutines.launch
-import kotlin.time.Clock
 
 @Composable
-fun BlockSetListScreen(viewModel: BlockSetListScreenViewModel, onNavigateToBlockSet: () -> Unit) {
+fun BlockSetListScreen(viewModel: BlockSetListScreenViewModel, navigateToAddBlockSet: () -> Unit, navigateToBlockSetDetails: (Int) -> Unit) {
     val blockSets by viewModel.blockSetsFLow.collectAsStateWithLifecycle(
         initialValue = listOf()
     )
@@ -54,7 +49,7 @@ fun BlockSetListScreen(viewModel: BlockSetListScreenViewModel, onNavigateToBlock
             }
         },
         floatingActionButton = {
-            FloatingActionButton(onNavigateToBlockSet) {
+            FloatingActionButton(navigateToAddBlockSet) {
                 Icon(add, "navigate to add app to blocklist screen")
             }
         }
@@ -70,6 +65,9 @@ fun BlockSetListScreen(viewModel: BlockSetListScreenViewModel, onNavigateToBlock
                         modifier = Modifier
                             .padding(start = 16.dp)
                             .weight(9f)
+                            .clickable(onClick = {
+                               navigateToBlockSetDetails(blockSet.id)
+                            })
                     )
                     Spacer(Modifier)
                     Icon(

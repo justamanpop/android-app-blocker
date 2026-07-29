@@ -7,15 +7,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.datastore.core.DataStore
 import androidx.datastore.dataStore
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.appblocker.ui.screens.addAppToBlockListScreen.AddAppToBlockListScreenViewModel
 import com.example.appblocker.ui.screens.addAppToBlockListScreen.AddAppToBlockListScreenViewModelFactory
 import com.example.appblocker.ui.screens.addAppToBlockListScreen.AddAppToBlocklistScreen
 import com.example.appblocker.ui.screens.addBlockSetScreen.AddBlockSetScreen
 import com.example.appblocker.ui.screens.addBlockSetScreen.AddBlockSetScreenViewModel
 import com.example.appblocker.ui.screens.addBlockSetScreen.AddBlockSetScreenViewModelFactory
+import com.example.appblocker.ui.screens.blockSetDetails.BlockSetDetailsScreen
 import com.example.appblocker.ui.screens.blockSetListScreen.BlockSetListScreen
 import com.example.appblocker.ui.screens.blockSetListScreen.BlockSetListScreenViewModel
 import com.example.appblocker.ui.screens.blockSetListScreen.BlockSetListScreenViewModelFactory
@@ -43,13 +46,20 @@ fun AppNavigation(modifier: Modifier = Modifier) {
         composable("block_set_list") {
             val viewModel: BlockSetListScreenViewModel =
                 viewModel(factory = BlockSetListScreenViewModelFactory(LocalContext.current.dataStore2))
-            BlockSetListScreen(viewModel, {navController.navigate("add_block_set")})
+            BlockSetListScreen(viewModel, {navController.navigate("add_block_set")}, {id -> navController.navigate("block_set_details/$id")})
         }
         composable("add_block_set") {
             val viewModel: AddBlockSetScreenViewModel =
                 viewModel(factory = AddBlockSetScreenViewModelFactory(LocalContext.current.dataStore2))
             AddBlockSetScreen(viewModel)
         }
+
+        composable("block_set_details/{id}", listOf(navArgument("id") {type = NavType.IntType})) {
+            backStackEntry ->
+            val id = backStackEntry.arguments?.getInt("id") ?: 0
+            BlockSetDetailsScreen(id)
+        }
+
         composable("blocked_app_list") {
             val viewModel: BlockedAppListScreenViewModel =
                 viewModel(factory = BlockedAppListScreenViewModelFactory(LocalContext.current.dataStore))
