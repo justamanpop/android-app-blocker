@@ -30,6 +30,42 @@ import com.example.appblocker.delete
 import kotlinx.coroutines.launch
 
 @Composable
-fun BlockSetDetailsScreen(id: Int) {
-    Text("id of block set is $id")
+fun BlockSetDetailsScreen(
+    viewModel: BlockSetDetailsScreenViewModel,
+    onNavigateToAddApp: (id: Int) -> Unit
+) {
+    val blockSetState by viewModel.blockSet.collectAsStateWithLifecycle(null)
+    //for null check smart cast
+    val blockSet = blockSetState
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    if (blockSet == null) {
+        Text("Invalid ID passed")
+    } else {
+        Scaffold(
+            snackbarHost = {
+                SnackbarHost(hostState = snackbarHostState) { data ->
+                    Snackbar(
+                        containerColor = Color(0xFF2E7D32),
+                        contentColor = Color.White,
+                        actionColor = Color.Yellow,
+                        snackbarData = data
+                    )
+                }
+            },
+            floatingActionButton = {
+                FloatingActionButton({ onNavigateToAddApp(blockSet.id) }) {
+                    Icon(add, "navigate to add app to blocklist screen")
+                }
+            }
+        ) { scaffoldPadding ->
+            Text(
+                "Block set name is ${blockSet.name} and has id ${blockSet.id}",
+                modifier = Modifier.padding(scaffoldPadding)
+            )
+        }
+    }
+
 }
