@@ -25,11 +25,6 @@ import com.example.appblocker.ui.screens.blockSetListScreen.BlockSetListScreen
 import com.example.appblocker.ui.screens.blockSetListScreen.BlockSetListScreenViewModel
 import com.example.appblocker.ui.screens.blockSetListScreen.BlockSetListScreenViewModelFactory
 
-val Context.dataStore: DataStore<List<AppBlockListPreferences>> by dataStore(
-    fileName = "appBlockList.json",
-    serializer = AppBlockListPreferencesSerializer
-)
-
 val Context.dataStore2: DataStore<List<AppBlockSetPreferences>> by dataStore(
     fileName = "appBlockSet.json",
     serializer = AppBlockSetPreferencesSerializer
