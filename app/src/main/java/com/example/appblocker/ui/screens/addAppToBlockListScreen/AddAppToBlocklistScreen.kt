@@ -1,5 +1,6 @@
 package com.example.appblocker.ui.screens.addAppToBlockListScreen
 
+import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -41,7 +42,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun AddAppToBlocklistScreen(viewModel: AddAppToBlockListScreenViewModel = viewModel()) {
+fun AddAppToBlocklistScreen(viewModel: AddAppToBlockListScreenViewModel, blockSetId: Int) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -107,6 +108,10 @@ fun AddAppToBlocklistScreen(viewModel: AddAppToBlockListScreenViewModel = viewMo
                     verticalArrangement = Arrangement.spacedBy(8.dp),
 
                     ) {
+                    Log.d("addAppDebug","no of apps loaded is ${state.apps.size}")
+                    Log.d("addAppDebug","no of apps after search term filter is ${state.filteredApps.size}")
+                    Log.d("addAppDebug", "search term is  ${state.searchTerm}")
+                    Log.d ("addAppDebug","no of apps containing search term is ${state.apps.filter { a -> a.appName.contains(state.searchTerm, ignoreCase = true) }}")
                     items(state.filteredApps.size) { index ->
                         val appName = state.filteredApps[index].appName
                         Row(

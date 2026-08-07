@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.appblocker.AppBlockSetPreferences
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -26,18 +25,30 @@ class BlockSetDetailsScreenViewModelFactory(
 }
 
 class BlockSetDetailsScreenViewModel(
-    dataStore: DataStore<List<AppBlockSetPreferences>>,
-    blockSetId: Int
+    val dataStore: DataStore<List<AppBlockSetPreferences>>,
+    val blockSetId: Int
 ) :
     ViewModel() {
-    private val blockSetsFLow: StateFlow<List<AppBlockSetPreferences>> =
+    val blockSetFlow: StateFlow<List<AppBlockSetPreferences>> =
         dataStore.data
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
                 initialValue = listOf()
             )
-    val blockSet = blockSetsFLow.map { list ->
-        list.find { it.id == blockSetId }
+
+    fun removePackageFromBlockList(appName: String, appPackageName: String) {
+        viewModelScope.launch {
+            dataStore.updateData { preferences ->
+                preferences.map {
+                    blockSet ->
+                    if (blockSet.id == blockSetId) {
+                        blockSet.copy(blockList = blockSet.blockList.filter { app ->  app.appPackageName == appPackageName})
+                    } else {
+                       blockSet
+                    }
+                }
+            }
+        }
     }
 }

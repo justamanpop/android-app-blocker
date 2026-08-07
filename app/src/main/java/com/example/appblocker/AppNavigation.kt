@@ -24,12 +24,6 @@ import com.example.appblocker.ui.screens.blockSetDetails.BlockSetDetailsScreenVi
 import com.example.appblocker.ui.screens.blockSetListScreen.BlockSetListScreen
 import com.example.appblocker.ui.screens.blockSetListScreen.BlockSetListScreenViewModel
 import com.example.appblocker.ui.screens.blockSetListScreen.BlockSetListScreenViewModelFactory
-import com.example.appblocker.ui.screens.blockedAppListScreen.BlockedAppListScreen
-import com.example.appblocker.ui.screens.blockedAppListScreen.BlockedAppListScreenViewModel
-import com.example.appblocker.ui.screens.blockedAppListScreen.BlockedAppListScreenViewModelFactory
-import com.example.appblocker.ui.screens.blockedAppListScreenOld.BlockedAppListScreenOld
-import com.example.appblocker.ui.screens.blockedAppListScreenOld.BlockedAppListScreenViewModelOldFactory
-import com.example.appblocker.ui.screens.blockedAppListScreenOld.BlockedAppListScreenViewModelOld
 
 val Context.dataStore: DataStore<List<AppBlockListPreferences>> by dataStore(
     fileName = "appBlockList.json",
@@ -51,7 +45,10 @@ fun AppNavigation(modifier: Modifier = Modifier) {
         composable("block_set_list") {
             val viewModel: BlockSetListScreenViewModel =
                 viewModel(factory = BlockSetListScreenViewModelFactory(LocalContext.current.dataStore2))
-            BlockSetListScreen(viewModel, {navController.navigate("add_block_set")}, {id -> navController.navigate("block_set_details/$id")})
+            BlockSetListScreen(
+                viewModel,
+                { navController.navigate("add_block_set") },
+                { id -> navController.navigate("block_set_details/$id") })
         }
         composable("add_block_set") {
             val viewModel: AddBlockSetScreenViewModel =
@@ -59,36 +56,36 @@ fun AppNavigation(modifier: Modifier = Modifier) {
             AddBlockSetScreen(viewModel)
         }
 
-        composable("block_set_details/{id}", listOf(navArgument("id") {type = NavType.IntType})) {
-            backStackEntry ->
+        composable(
+            "block_set_details/{id}",
+            listOf(navArgument("id") { type = NavType.IntType })
+        ) { backStackEntry ->
             val id = backStackEntry.arguments?.getInt("id") ?: 0
-            val viewModel: BlockSetDetailsScreenViewModel = viewModel(factory = BlockSetDetailsScreenViewModelFactory(LocalContext.current.dataStore2, id))
-            BlockSetDetailsScreen(viewModel, {id -> navController.navigate("blocked_app_list/$id")})
-        }
-
-        composable("blocked_app_list/{id}", listOf(navArgument("id") {type = NavType.IntType})) {
-                backStackEntry ->
-            /*val viewModel: BlockedAppListScreenViewModel =
-                viewModel(factory = BlockedAppListScreenViewModelFactory(LocalContext.current.dataStore))*/
-            val id = backStackEntry.arguments?.getInt("id") ?: 0
-            BlockedAppListScreen(id)
-        }
-
-        composable("blocked_app_list") {
-            val viewModel: BlockedAppListScreenViewModelOld =
-                viewModel(factory = BlockedAppListScreenViewModelOldFactory(LocalContext.current.dataStore))
-            BlockedAppListScreenOld(
+            val viewModel: BlockSetDetailsScreenViewModel = viewModel(
+                factory = BlockSetDetailsScreenViewModelFactory(
+                    LocalContext.current.dataStore2,
+                    id
+                )
+            )
+            BlockSetDetailsScreen(
                 viewModel,
-                onNavigateToAddApp = { navController.navigate("add_to_blocklist") })
+                id,
+                { id -> navController.navigate("add_to_blocklist/$id") })
         }
-        composable("add_to_blocklist") {
+
+
+        composable(
+            "add_to_blocklist/{id}",
+            listOf(navArgument("id") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getInt("id") ?: 0
             val viewModel: AddAppToBlockListScreenViewModel =
                 viewModel(
                     factory = AddAppToBlockListScreenViewModelFactory(
-                        LocalContext.current.dataStore
+                        LocalContext.current.dataStore2, id
                     )
                 )
-            AddAppToBlocklistScreen(viewModel)
+            AddAppToBlocklistScreen(viewModel, id)
         }
     }
 }
