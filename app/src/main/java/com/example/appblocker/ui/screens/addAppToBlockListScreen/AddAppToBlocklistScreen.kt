@@ -1,6 +1,5 @@
 package com.example.appblocker.ui.screens.addAppToBlockListScreen
 
-import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -38,7 +37,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -75,73 +73,78 @@ fun AddAppToBlocklistScreen(viewModel: AddAppToBlockListScreenViewModel, blockSe
             }
         }
 
-        if (state.apps.isEmpty()) {
-            Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-            }
+        val blockSet = state.blockSet
+        if (blockSet == null) {
+            Text("Error, unable to load block set for id $blockSetId")
         } else {
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-            ) {
-
-                OutlinedTextField(
-                    state.searchTerm, { searchTerm ->
-                        viewModel.updateSearchTerm(searchTerm)
-                    },
-                    placeholder = { Text("Search") },
-                    singleLine = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 4.dp, end = 4.dp)
-                        .focusRequester(focusRequester)
-                )
-
-                Spacer(
+            if (state.apps.isEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                }
+            } else {
+                Column(
                     Modifier
-                        .height(12.dp)
-                        .border(2.dp, Color.Green)
-                )
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                        .fillMaxSize()
+                        .padding(padding)
+                ) {
+                    Text("Add to block set ${blockSet.name}")
+                    OutlinedTextField(
+                        state.searchTerm, { searchTerm ->
+                            viewModel.updateSearchTerm(searchTerm)
+                        },
+                        placeholder = { Text("Search") },
+                        singleLine = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 4.dp, end = 4.dp)
+                            .focusRequester(focusRequester)
+                    )
 
-                    ) {
-                    Log.d("addAppDebug","no of apps loaded is ${state.apps.size}")
-                    Log.d("addAppDebug","no of apps after search term filter is ${state.filteredApps.size}")
-                    Log.d("addAppDebug", "search term is  ${state.searchTerm}")
-                    Log.d ("addAppDebug","no of apps containing search term is ${state.apps.filter { a -> a.appName.contains(state.searchTerm, ignoreCase = true) }}")
-                    items(state.filteredApps.size) { index ->
-                        val appName = state.filteredApps[index].appName
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .clickable(onClick = {
-                                    viewModel.addAppPackageToBlockList(
-                                        appName,
-                                        state.filteredApps[index].appPackageName
-                                    )
-                                    scope.launch {
-                                        snackbarHostState.currentSnackbarData?.dismiss()
-                                        snackbarHostState.showSnackbar(message = "$appName added to block list!")
-                                    }
-                                })
+                    Spacer(
+                        Modifier
+                            .height(12.dp)
+                            .border(2.dp, Color.Green)
+                    )
+                    LazyColumn(
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+
                         ) {
-                            Text(
-                                appName,
-                                fontSize = 32.sp,
-                                lineHeight = 32.sp,
-                                modifier = Modifier.padding(start = 16.dp)
-                            )
-                            Spacer(Modifier.width(8.dp))
+                        items(state.filteredApps.size) { index ->
+                            val appName = state.filteredApps[index].appName
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clickable(onClick = {
+                                        viewModel.addAppPackageToBlockList(
+                                            appName,
+                                            state.filteredApps[index].appPackageName
+                                        )
+                                        scope.launch {
+                                            snackbarHostState.currentSnackbarData?.dismiss()
+                                            snackbarHostState.showSnackbar(message = "$appName added to block list!")
+                                        }
+                                    })
+                            ) {
+                                Text(
+                                    appName,
+                                    fontSize = 32.sp,
+                                    lineHeight = 32.sp,
+                                    modifier = Modifier.padding(start = 16.dp)
+                                )
+                                Spacer(Modifier.width(8.dp))
+                            }
+                            Spacer(Modifier.height(4.dp))
+                            HorizontalDivider(color = Color.Gray, thickness = 1.dp)
                         }
-                        Spacer(Modifier.height(4.dp))
-                        HorizontalDivider(color = Color.Gray, thickness = 1.dp)
                     }
                 }
             }
         }
+
     }
 
     Spacer(Modifier.height(10.dp))

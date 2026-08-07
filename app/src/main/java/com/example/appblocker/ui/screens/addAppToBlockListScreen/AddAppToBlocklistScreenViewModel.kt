@@ -58,13 +58,9 @@ class AddAppToBlockListScreenViewModel(
     val uiState =
         combine(_installedApps, _blockedSets, _searchTerm) { installed, blockSets, searchTerm ->
             val blockSet = blockSets.find { bs -> bs.id == blockSetId }
-            Log.d("addAppDebug", "block sets is $blockSets")
-            Log.d("addAppDebug", "block set id is $blockSetId")
             val filteredApps = if (blockSet == null) {
-                Log.d("addAppDebug", "block set is null")
                 listOf()
             } else {
-                Log.d("addAppDebug", "block set is NOT null")
                 installed.filterNot { app ->
                     blockSet.blockList.any {
                         it.appPackageName == app.appPackageName

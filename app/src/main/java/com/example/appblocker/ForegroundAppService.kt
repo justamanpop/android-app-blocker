@@ -33,9 +33,10 @@ class ForegroundAppService : AccessibilityService() {
         super.onCreate()
 
         serviceScope.launch {
-            dataStore.data.collect { blockedPackageList ->
+            dataStore2.data.collect { blockSets ->
                 val blockedPackageNamesFromPrefs =
-                    blockedPackageList.map { blockedPackages -> blockedPackages.appPackageName }
+                    blockSets.flatMap { blockSet -> blockSet.blockList }
+                        .map { app -> app.appPackageName }
                 blockedPackageNames = blockedPackageNamesFromPrefs.toSet()
             }
         }
@@ -51,7 +52,7 @@ class ForegroundAppService : AccessibilityService() {
         manager.createNotificationChannel(channel)
 
         val notification = NotificationCompat.Builder(this, channelId)
-            .setContentTitle("App Blocker is Active")
+            .setContentTitle("${getString( R.string.app_name)} is Active")
             .setContentText("Monitoring active apps to block them.")
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .build()
@@ -82,7 +83,7 @@ class ForegroundAppService : AccessibilityService() {
          * sometimes after user clicks close on overlay shown on top of blocked app, there's a "ghost" event of blocked app that is sent.
          * This makes overlay show again. This check prevents overlay logic from running for 1 second after an app
          * is blocked and an overlay shows up
-        */
+         */
         if (packageName == lastBlockedPackageName) {
             return
         }
