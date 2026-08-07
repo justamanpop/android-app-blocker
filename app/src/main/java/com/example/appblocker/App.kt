@@ -128,9 +128,6 @@ fun App(
                     Text("Grant permissions")
                 }
             }
-            Button({onNavigateToManageBlockSets()}) {
-                Text("temp Block set button")
-            }
         }
     }
 }
