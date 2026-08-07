@@ -30,7 +30,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import com.example.appblocker.ui.theme.GreenAction
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.res.stringResource
 
 import androidx.compose.runtime.getValue
