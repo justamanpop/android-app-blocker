@@ -14,4 +14,5 @@ For accessibility permission, need to go to Settings > Apps > App Blocker > Clic
 then follow instructions in app to grant the permission.
 
 ### Planned Changes
-- Add some friction to removal of app from block list so that one can't simply remove an app when an urge hits
+- Add ability to configure on what days and time a block set is active
+- Beautify UI. Currently, it's bare minimum functional, no nice spaces or formatting

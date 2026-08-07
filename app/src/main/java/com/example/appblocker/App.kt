@@ -30,7 +30,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import com.example.appblocker.ui.theme.GreenAction
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.res.stringResource
 
 import androidx.compose.runtime.getValue
@@ -46,7 +45,7 @@ import androidx.core.net.toUri
 @Composable
 fun App(
     modifier: Modifier = Modifier,
-    onNavigateToManageBlockedApps: () -> Unit
+    onNavigateToManageBlockSets: () -> Unit
 ) {
     var permissionCheckCounter by remember { mutableIntStateOf(0) }
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
@@ -107,7 +106,7 @@ fun App(
                     textAlign = TextAlign.Center
                 )
                 Spacer(Modifier.height(24.dp))
-                Button(onClick = onNavigateToManageBlockedApps) {
+                Button(onClick = onNavigateToManageBlockSets) {
                     Text("Manage blocked apps")
                 }
             }
