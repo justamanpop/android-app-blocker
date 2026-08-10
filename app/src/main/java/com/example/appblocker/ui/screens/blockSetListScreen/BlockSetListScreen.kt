@@ -16,17 +16,22 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.appblocker.AppBlockSetPreferences
 import com.example.appblocker.add
 import com.example.appblocker.delete
+import com.example.appblocker.ui.shared.DeleteConfirmationModal
 import kotlinx.coroutines.launch
 
 @Composable
@@ -37,6 +42,7 @@ fun BlockSetListScreen(viewModel: BlockSetListScreenViewModel, navigateToAddBloc
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
+    var blockSetToDelete by remember { mutableStateOf<AppBlockSetPreferences?>(null) }
     Scaffold(
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState) { data ->
@@ -78,11 +84,7 @@ fun BlockSetListScreen(viewModel: BlockSetListScreenViewModel, navigateToAddBloc
                             .align(Alignment.CenterVertically)
                             .weight(1f)
                             .clickable(onClick = {
-                                viewModel.deleteBlockSet(blockSet.id)
-                                scope.launch {
-                                    snackbarHostState.currentSnackbarData?.dismiss()
-                                    snackbarHostState.showSnackbar(message = "Block set ${blockSet.name} deleted!")
-                                }
+                                blockSetToDelete = blockSet
                             })
                     )
 
@@ -90,6 +92,19 @@ fun BlockSetListScreen(viewModel: BlockSetListScreenViewModel, navigateToAddBloc
                 Spacer(Modifier.height(4.dp))
                 HorizontalDivider(color = Color.Gray, thickness = 1.dp)
             }
+        }
+
+        val blockSetShadow = blockSetToDelete
+        if (blockSetShadow != null) {
+            DeleteConfirmationModal(blockSetShadow.name, {
+                viewModel.deleteBlockSet(blockSetShadow.id)
+                scope.launch {
+                    snackbarHostState.currentSnackbarData?.dismiss()
+                    snackbarHostState.showSnackbar(message = "Block set ${blockSetShadow.name} deleted!")
+                }
+            }, {
+                blockSetToDelete = null
+            })
         }
     }
 }
