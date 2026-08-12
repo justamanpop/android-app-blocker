@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
 @Composable
-fun AddBlockSetScreen(viewModel: AddBlockSetScreenViewModel) {
+fun AddBlockSetScreen(viewModel: AddBlockSetScreenViewModel, onAddBlockSet: () -> Unit) {
     val keyboardController = LocalSoftwareKeyboardController.current
     var nameTextFieldValue by remember { mutableStateOf("") }
 
@@ -56,6 +56,7 @@ fun AddBlockSetScreen(viewModel: AddBlockSetScreenViewModel) {
                     snackbarHostState.currentSnackbarData?.dismiss()
                     snackbarHostState.showSnackbar(message = "Block set $blockSetToCreateName created!")
                 }
+                onAddBlockSet()
             }) {
                 Text("Create block set")
             }

@@ -35,7 +35,11 @@ import com.example.appblocker.ui.shared.DeleteConfirmationModal
 import kotlinx.coroutines.launch
 
 @Composable
-fun BlockSetListScreen(viewModel: BlockSetListScreenViewModel, navigateToAddBlockSet: () -> Unit, navigateToBlockSetDetails: (Int) -> Unit) {
+fun BlockSetListScreen(
+    viewModel: BlockSetListScreenViewModel,
+    navigateToAddBlockSet: () -> Unit,
+    navigateToBlockSetDetails: (Int) -> Unit
+) {
     val blockSets by viewModel.blockSetsFLow.collectAsStateWithLifecycle(
         initialValue = listOf()
     )
@@ -59,8 +63,10 @@ fun BlockSetListScreen(viewModel: BlockSetListScreenViewModel, navigateToAddBloc
                 Icon(add, "navigate to add app to blocklist screen")
             }
         }
-    ) { padding ->
-        Column(modifier = Modifier.padding(16.dp)) {
+    ) { scaffoldPadding ->
+        Column(modifier = Modifier
+            .padding(scaffoldPadding)
+            .padding(horizontal = 16.dp)) {
             Text("Block sets")
             blockSets.forEach { blockSet ->
                 Row(modifier = Modifier.fillMaxWidth()) {
@@ -72,7 +78,7 @@ fun BlockSetListScreen(viewModel: BlockSetListScreenViewModel, navigateToAddBloc
                             .padding(start = 16.dp)
                             .weight(9f)
                             .clickable(onClick = {
-                               navigateToBlockSetDetails(blockSet.id)
+                                navigateToBlockSetDetails(blockSet.id)
                             })
                     )
                     Spacer(Modifier)

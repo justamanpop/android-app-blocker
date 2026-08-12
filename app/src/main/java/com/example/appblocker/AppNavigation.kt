@@ -48,7 +48,9 @@ fun AppNavigation(modifier: Modifier = Modifier) {
         composable("add_block_set") {
             val viewModel: AddBlockSetScreenViewModel =
                 viewModel(factory = AddBlockSetScreenViewModelFactory(LocalContext.current.dataStore2))
-            AddBlockSetScreen(viewModel)
+            AddBlockSetScreen(
+                viewModel,
+                { navController.navigate("block_set_list") })
         }
 
         composable(
