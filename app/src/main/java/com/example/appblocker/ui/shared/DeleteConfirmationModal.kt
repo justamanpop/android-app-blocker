@@ -1,14 +1,27 @@
 package com.example.appblocker.ui.shared
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.example.appblocker.ui.theme.AccentDark
+import com.example.appblocker.ui.theme.AccentLight
+import com.example.appblocker.ui.theme.Border
+import com.example.appblocker.ui.theme.CardElevated
+import com.example.appblocker.ui.theme.OnPrimary
+import com.example.appblocker.ui.theme.TextSecondary
 
 @Composable
-fun DeleteConfirmationModal(nameOfDeletionItem: String, onDelete: () -> Unit, onDismissRequest: () -> Unit) {
+fun DeleteConfirmationModal(
+    nameOfDeletionItem: String,
+    onDelete: () -> Unit,
+    onDismissRequest: () -> Unit
+) {
     AlertDialog(
         onDismissRequest = onDismissRequest,
         title = { Text("Confirm Deletion") },
@@ -19,11 +32,9 @@ fun DeleteConfirmationModal(nameOfDeletionItem: String, onDelete: () -> Unit, on
                     onDelete()
                     onDismissRequest()
                 },
-                colors = ButtonColors(
-                    contentColor = Color.White,
-                    containerColor = Color(201, 9, 35, 255),
-                    disabledContentColor = Color.White,
-                    disabledContainerColor = Color(186, 22, 39),
+                colors = ButtonDefaults.textButtonColors(
+                    containerColor = AccentLight,
+                    contentColor = OnPrimary
                 ),
             ) {
                 Text("Delete")
@@ -32,12 +43,11 @@ fun DeleteConfirmationModal(nameOfDeletionItem: String, onDelete: () -> Unit, on
         dismissButton = {
             Button(
                 onClick = onDismissRequest,
-                colors = ButtonColors(
-                    containerColor = Color(52, 161, 235),
-                    contentColor = Color.White,
-                    disabledContainerColor = Color.Gray,
-                    disabledContentColor = Color.Gray
+                colors = ButtonDefaults.textButtonColors(
+                    containerColor = AccentDark,
+                    contentColor = TextSecondary
                 ),
+                border = BorderStroke(1.dp, Border)
             ) {
                 Text("Cancel")
             }
