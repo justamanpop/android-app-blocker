@@ -28,8 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
-import com.example.appblocker.ui.theme.GreenAction
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.res.stringResource
 
 import androidx.compose.runtime.getValue
@@ -41,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 
 import androidx.core.net.toUri
+import com.example.appblocker.ui.theme.Card
 
 @Composable
 fun App(
@@ -116,14 +115,13 @@ fun App(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    "App does not have required permissions to work. Click button below to grant them",
+                    "App does not have required permissions to work. Click below to grant",
                     fontSize = 24.sp,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = { showPermissionDialog = true },
-                    colors = ButtonDefaults.buttonColors(containerColor = GreenAction)
                 ) {
                     Text("Grant permissions")
                 }
@@ -183,7 +181,6 @@ fun PermissionDialog(
                     Button(
                         onClick = onGrantAccessibility,
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = GreenAction)
                     ) {
                         Text("Grant Accessibility")
                     }
@@ -192,7 +189,6 @@ fun PermissionDialog(
                     Button(
                         onClick = onGrantOverlay,
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = GreenAction)
                     ) {
                         Text("Grant Overlay")
                     }
@@ -201,7 +197,6 @@ fun PermissionDialog(
                     Button(
                         onClick = onGrantNotification,
                         modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = GreenAction)
                     ) {
                         Text("Grant Notification")
                     }
