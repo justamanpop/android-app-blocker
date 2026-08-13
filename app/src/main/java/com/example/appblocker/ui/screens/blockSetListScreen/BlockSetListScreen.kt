@@ -15,6 +15,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -37,6 +38,7 @@ import com.example.appblocker.AppBlockSetPreferences
 import com.example.appblocker.add
 import com.example.appblocker.delete
 import com.example.appblocker.ui.shared.DeleteConfirmationModal
+import com.example.appblocker.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
 
 @Composable
@@ -107,19 +109,24 @@ fun BlockSetListScreen(
 @Composable
 fun BlockSetListItem(blockSet: AppBlockSetPreferences, onClick: () -> Unit, onDelete: () -> Unit, modifier: Modifier = Modifier) {
     Card(
-        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-            Text(
-                text = blockSet.name,
-                fontSize = 32.sp,
-                lineHeight = 32.sp,
-                modifier = Modifier
-                    .padding(start = 16.dp)
-                    .weight(9f)
-                    .clickable(onClick = onClick)
-            )
+        Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)) {
+            Column(modifier = Modifier.weight(9f).clickable(onClick = onClick)) {
+                Text(
+                    text = blockSet.name,
+                    fontSize = 32.sp,
+                    lineHeight = 32.sp,
+                    modifier = Modifier
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(text = "${blockSet.blockList.size} apps", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+            }
             Spacer(Modifier)
             Icon(
                 delete,
