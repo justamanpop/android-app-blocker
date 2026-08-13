@@ -25,6 +25,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -67,7 +69,7 @@ fun BlockSetListScreen(
         Column(modifier = Modifier
             .padding(scaffoldPadding)
             .padding(horizontal = 16.dp)) {
-            Text("Block sets")
+            Text("Block sets", fontWeight = FontWeight.SemiBold, fontSize = 24.sp, modifier = Modifier.padding(16.dp))
             blockSets.forEach { blockSet ->
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text(
