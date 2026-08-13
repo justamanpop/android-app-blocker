@@ -127,6 +127,11 @@ fun App(
                 }
             }
         }
+        Button({
+            onNavigateToManageBlockSets()
+        }) {
+            Text("Temp navigate")
+        }
     }
 }
 
