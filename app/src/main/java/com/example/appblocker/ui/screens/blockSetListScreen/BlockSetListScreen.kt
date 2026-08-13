@@ -1,12 +1,17 @@
 package com.example.appblocker.ui.screens.blockSetListScreen
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -64,39 +69,23 @@ fun BlockSetListScreen(
             }
         }
     ) { scaffoldPadding ->
-        Column(modifier = Modifier
-            .padding(scaffoldPadding)
-            .padding(horizontal = 16.dp)) {
-            Text("Block sets", fontWeight = FontWeight.SemiBold, fontSize = 24.sp, modifier = Modifier.padding(16.dp))
+        Column(
+            modifier = Modifier
+                .padding(scaffoldPadding)
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            Text(
+                "Block sets",
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 24.sp,
+                modifier = Modifier.padding(16.dp)
+            )
             blockSets.forEach { blockSet ->
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = blockSet.name,
-                        fontSize = 32.sp,
-                        lineHeight = 32.sp,
-                        modifier = Modifier
-                            .padding(start = 16.dp)
-                            .weight(9f)
-                            .clickable(onClick = {
-                                navigateToBlockSetDetails(blockSet.id)
-                            })
-                    )
-                    Spacer(Modifier)
-                    Icon(
-                        delete,
-                        "delete block set",
-                        modifier = Modifier
-                            .padding(end = 8.dp)
-                            .align(Alignment.CenterVertically)
-                            .weight(1f)
-                            .clickable(onClick = {
-                                blockSetToDelete = blockSet
-                            })
-                    )
-
-                }
-                Spacer(Modifier.height(4.dp))
-                HorizontalDivider(color = Color.Gray, thickness = 1.dp)
+                BlockSetListItem(
+                    blockSet,
+                    { navigateToBlockSetDetails(blockSet.id) },
+                    {blockSetToDelete = blockSet})
             }
         }
 
@@ -111,6 +100,37 @@ fun BlockSetListScreen(
             }, {
                 blockSetToDelete = null
             })
+        }
+    }
+}
+
+@Composable
+fun BlockSetListItem(blockSet: AppBlockSetPreferences, onClick: () -> Unit, onDelete: () -> Unit, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+            Text(
+                text = blockSet.name,
+                fontSize = 32.sp,
+                lineHeight = 32.sp,
+                modifier = Modifier
+                    .padding(start = 16.dp)
+                    .weight(9f)
+                    .clickable(onClick = onClick)
+            )
+            Spacer(Modifier)
+            Icon(
+                delete,
+                "delete block set",
+                modifier = Modifier
+                    .padding(end = 8.dp)
+                    .align(Alignment.CenterVertically)
+                    .weight(1f)
+                    .clickable(onClick = onDelete)
+            )
+
         }
     }
 }
