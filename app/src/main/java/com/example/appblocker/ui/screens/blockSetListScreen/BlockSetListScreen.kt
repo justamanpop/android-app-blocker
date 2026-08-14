@@ -122,7 +122,6 @@ fun BlockSetListItem(blockSet: AppBlockSetPreferences, onClick: () -> Unit, onDe
                     text = blockSet.name,
                     fontSize = 32.sp,
                     lineHeight = 32.sp,
-                    modifier = Modifier
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(text = "${blockSet.blockList.size} apps", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
