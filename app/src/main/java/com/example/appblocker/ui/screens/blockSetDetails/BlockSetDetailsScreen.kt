@@ -6,14 +6,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -30,12 +29,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.appblocker.AppBlockListPreferences
-import com.example.appblocker.AppBlockSetPreferences
+import com.example.appblocker.AppBlockItemPreferences
 import com.example.appblocker.add
 import com.example.appblocker.delete
 import com.example.appblocker.lock_clock
-import com.example.appblocker.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
 import kotlin.collections.listOf
 import kotlin.time.Clock
@@ -87,6 +84,7 @@ fun BlockSetDetailsScreen(
                 modifier = Modifier
                     .padding(scaffoldPadding)
                     .padding(16.dp)
+                    .verticalScroll(rememberScrollState())
             ) {
                 Text(
                     "${currBlockSet.name} blocked apps",
@@ -116,7 +114,7 @@ fun BlockSetDetailsScreen(
 
 @Composable
 fun BlockedAppItem(
-    blockedApp: AppBlockListPreferences,
+    blockedApp: AppBlockItemPreferences,
     isLocked: Boolean,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier

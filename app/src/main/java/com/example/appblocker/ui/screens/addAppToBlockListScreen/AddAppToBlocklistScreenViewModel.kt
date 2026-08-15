@@ -1,13 +1,13 @@
 package com.example.appblocker.ui.screens.addAppToBlockListScreen
 
 import android.content.pm.PackageManager
-import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.appblocker.AppBlockListPreferences
+import com.example.appblocker.AppBlockItemPreferences
 import com.example.appblocker.AppBlockSetPreferences
+import com.example.appblocker.AppRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -30,23 +30,21 @@ data class AddAppToBlockListScreenState(
 data class AppNameInfo(val appName: String, val appPackageName: String)
 
 class AddAppToBlockListScreenViewModelFactory(
-    private val dataStore: DataStore<List<AppBlockSetPreferences>>, private val blockSetId: Int
+    private val dataStore: DataStore<List<AppBlockSetPreferences>>, private val blockSetId: Int, private val appRepository: AppRepository,
 ) :
     ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(AddAppToBlockListScreenViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return AddAppToBlockListScreenViewModel(dataStore, blockSetId) as T
+            return AddAppToBlockListScreenViewModel(dataStore, blockSetId, appRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
 
 class AddAppToBlockListScreenViewModel(
-    val dataStore: DataStore<List<AppBlockSetPreferences>>, val blockSetId: Int
+    val dataStore: DataStore<List<AppBlockSetPreferences>>, val blockSetId: Int, val appRepository: AppRepository,
 ) : ViewModel() {
-    private val _installedApps = MutableStateFlow<List<AppNameInfo>>(listOf())
-
     private val _blockedSets = dataStore.data.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -56,7 +54,7 @@ class AddAppToBlockListScreenViewModel(
     private val _searchTerm = MutableStateFlow("")
 
     val uiState =
-        combine(_installedApps, _blockedSets, _searchTerm) { installed, blockSets, searchTerm ->
+        combine(appRepository.apps, _blockedSets, _searchTerm) { installed, blockSets, searchTerm ->
             val blockSet = blockSets.find { bs -> bs.id == blockSetId }
             val filteredApps = if (blockSet == null) {
                 listOf()
@@ -82,21 +80,6 @@ class AddAppToBlockListScreenViewModel(
             AddAppToBlockListScreenState(listOf(), null, "", listOf())
         )
 
-    fun getAppList(pm: PackageManager) {
-        viewModelScope.launch {
-            val processedApps = withContext(Dispatchers.IO) {
-                val allApps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
-                allApps
-                    .map { app -> AppNameInfo(app.loadLabel(pm).toString(), app.packageName) }
-                    .filterNot { app ->
-                        app.appName.startsWith("com.")
-                    }
-                    .sortedBy { app -> app.appName }
-            }
-            _installedApps.value = processedApps
-        }
-    }
-
     @OptIn(ExperimentalTime::class)
     fun addAppPackageToBlockList(appName: String, appPackageName: String) {
         viewModelScope.launch {
@@ -104,7 +87,7 @@ class AddAppToBlockListScreenViewModel(
                 preferences.map { blockSet ->
                     if (blockSet.id == blockSetId) {
                         blockSet.copy(
-                            blockList = blockSet.blockList + AppBlockListPreferences(
+                            blockList = blockSet.blockList + AppBlockItemPreferences(
                                 appName,
                                 appPackageName,
                                 Clock.System.now()
