@@ -43,7 +43,7 @@ class BlockSetDetailsScreenViewModel(
                 preferences.map {
                     blockSet ->
                     if (blockSet.id == blockSetId) {
-                        blockSet.copy(blockList = blockSet.blockList.filter { app ->  app.appPackageName == appPackageName})
+                        blockSet.copy(blockList = blockSet.blockList.filterNot { app ->  app.appPackageName == appPackageName})
                     } else {
                        blockSet
                     }
