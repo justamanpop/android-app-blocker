@@ -31,7 +31,7 @@ val Context.dataStore2: DataStore<List<AppBlockSetPreferences>> by dataStore(
 )
 
 @Composable
-fun AppNavigation(modifier: Modifier = Modifier) {
+fun AppNavigation(modifier: Modifier = Modifier, appRepository: AppRepository) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "home", modifier = modifier) {
         composable("home") {
@@ -48,7 +48,9 @@ fun AppNavigation(modifier: Modifier = Modifier) {
         composable("add_block_set") {
             val viewModel: AddBlockSetScreenViewModel =
                 viewModel(factory = AddBlockSetScreenViewModelFactory(LocalContext.current.dataStore2))
-            AddBlockSetScreen(viewModel)
+            AddBlockSetScreen(
+                viewModel,
+                { navController.navigate("block_set_list") })
         }
 
         composable(
@@ -77,7 +79,7 @@ fun AppNavigation(modifier: Modifier = Modifier) {
             val viewModel: AddAppToBlockListScreenViewModel =
                 viewModel(
                     factory = AddAppToBlockListScreenViewModelFactory(
-                        LocalContext.current.dataStore2, id
+                        LocalContext.current.dataStore2, id, appRepository
                     )
                 )
             AddAppToBlocklistScreen(viewModel, id)

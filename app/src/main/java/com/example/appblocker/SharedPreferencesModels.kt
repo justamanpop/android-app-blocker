@@ -2,22 +2,20 @@ package com.example.appblocker
 
 import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.Serializer
-import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json.Default.decodeFromString
 import kotlinx.serialization.json.Json.Default.encodeToString
 import java.io.InputStream
 import java.io.OutputStream
-import java.util.Date
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 @Serializable
-data class AppBlockListPreferences @OptIn(ExperimentalTime::class) constructor(val appName: String, val appPackageName: String, val addedAt: Instant)
+data class AppBlockItemPreferences @OptIn(ExperimentalTime::class) constructor(val appName: String, val appPackageName: String, val addedAt: Instant)
 
 @Serializable
-data class AppBlockSetPreferences @OptIn(ExperimentalTime::class) constructor(val id: Int, val name: String, val blockList: List<AppBlockListPreferences>)
+data class AppBlockSetPreferences @OptIn(ExperimentalTime::class) constructor(val id: Int, val name: String, val blockList: List<AppBlockItemPreferences>)
 
 
 object AppBlockSetPreferencesSerializer: Serializer<List<AppBlockSetPreferences>> {

@@ -1,15 +1,21 @@
 package com.example.appblocker.ui.screens.blockSetListScreen
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
@@ -17,26 +23,37 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.appblocker.AppBlockSetPreferences
 import com.example.appblocker.add
 import com.example.appblocker.delete
+import com.example.appblocker.ui.shared.DeleteConfirmationModal
+import com.example.appblocker.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
 
 @Composable
-fun BlockSetListScreen(viewModel: BlockSetListScreenViewModel, navigateToAddBlockSet: () -> Unit, navigateToBlockSetDetails: (Int) -> Unit) {
-    val blockSets by viewModel.blockSetsFLow.collectAsStateWithLifecycle(
+fun BlockSetListScreen(
+    viewModel: BlockSetListScreenViewModel,
+    navigateToAddBlockSet: () -> Unit,
+    navigateToBlockSetDetails: (Int) -> Unit
+) {
+    val blockSets by viewModel.blockSetsFlow.collectAsStateWithLifecycle(
         initialValue = listOf()
     )
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
+    var blockSetToDelete by remember { mutableStateOf<AppBlockSetPreferences?>(null) }
     Scaffold(
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState) { data ->
@@ -53,43 +70,98 @@ fun BlockSetListScreen(viewModel: BlockSetListScreenViewModel, navigateToAddBloc
                 Icon(add, "navigate to add app to blocklist screen")
             }
         }
-    ) { padding ->
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("Block sets")
-            blockSets.forEach { blockSet ->
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = blockSet.name,
-                        fontSize = 32.sp,
-                        lineHeight = 32.sp,
-                        modifier = Modifier
-                            .padding(start = 16.dp)
-                            .weight(9f)
-                            .clickable(onClick = {
-                               navigateToBlockSetDetails(blockSet.id)
-                            })
-                    )
-                    Spacer(Modifier)
-                    Icon(
-                        delete,
-                        "delete block set",
-                        modifier = Modifier
-                            .padding(end = 8.dp)
-                            .align(Alignment.CenterVertically)
-                            .weight(1f)
-                            .clickable(onClick = {
-                                viewModel.deleteBlockSet(blockSet.id)
-                                scope.launch {
-                                    snackbarHostState.currentSnackbarData?.dismiss()
-                                    snackbarHostState.showSnackbar(message = "Block set ${blockSet.name} deleted!")
-                                }
-                            })
-                    )
+    ) { scaffoldPadding ->
+        Column(
+            modifier = Modifier
+                .padding(scaffoldPadding)
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+            Text(
+                "Block sets",
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 24.sp,
+                modifier = Modifier.padding(16.dp)
+            )
 
-                }
-                Spacer(Modifier.height(4.dp))
-                HorizontalDivider(color = Color.Gray, thickness = 1.dp)
+            if (blockSets.isEmpty()) {
+                Text(
+                    "No block sets exist. Tap + to create",
+                    fontSize = 16.sp,
+                    color = TextSecondary,
+                    modifier = Modifier.padding(16.dp)
+                )
             }
+
+            blockSets.forEach { blockSet ->
+                BlockSetListItem(
+                    blockSet,
+                    { navigateToBlockSetDetails(blockSet.id) },
+                    { blockSetToDelete = blockSet })
+            }
+        }
+        val blockSetShadow = blockSetToDelete
+        if (blockSetShadow != null) {
+            DeleteConfirmationModal(blockSetShadow.name, {
+                viewModel.deleteBlockSet(blockSetShadow.id)
+                scope.launch {
+                    snackbarHostState.currentSnackbarData?.dismiss()
+                    snackbarHostState.showSnackbar(message = "Block set ${blockSetShadow.name} deleted!")
+                }
+            }, {
+                blockSetToDelete = null
+            })
+        }
+    }
+}
+
+@Composable
+fun BlockSetListItem(
+    blockSet: AppBlockSetPreferences,
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically, modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(9f)
+                    .clickable(onClick = onClick)
+            ) {
+                Text(
+                    text = blockSet.name,
+                    fontSize = 32.sp,
+                    lineHeight = 32.sp,
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "${blockSet.blockList.size} apps",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+            Spacer(Modifier)
+            Icon(
+                delete,
+                "delete block set",
+                modifier = Modifier
+                    .padding(end = 8.dp)
+                    .align(Alignment.CenterVertically)
+                    .weight(1f)
+                    .clickable(onClick = onDelete)
+            )
+
         }
     }
 }

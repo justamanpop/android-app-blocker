@@ -37,13 +37,13 @@ class BlockSetDetailsScreenViewModel(
                 initialValue = listOf()
             )
 
-    fun removePackageFromBlockList(appName: String, appPackageName: String) {
+    fun removePackageFromBlockList(appPackageName: String) {
         viewModelScope.launch {
             dataStore.updateData { preferences ->
                 preferences.map {
                     blockSet ->
                     if (blockSet.id == blockSetId) {
-                        blockSet.copy(blockList = blockSet.blockList.filter { app ->  app.appPackageName == appPackageName})
+                        blockSet.copy(blockList = blockSet.blockList.filterNot { app ->  app.appPackageName == appPackageName})
                     } else {
                        blockSet
                     }
