@@ -83,14 +83,23 @@ fun BlockSetListScreen(
                 fontSize = 24.sp,
                 modifier = Modifier.padding(16.dp)
             )
+
+            if (blockSets.isEmpty()) {
+                Text(
+                    "None exist. Tap + to create",
+                    fontSize = 24.sp,
+                    color = TextSecondary,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+
             blockSets.forEach { blockSet ->
                 BlockSetListItem(
                     blockSet,
                     { navigateToBlockSetDetails(blockSet.id) },
-                    {blockSetToDelete = blockSet})
+                    { blockSetToDelete = blockSet })
             }
         }
-
         val blockSetShadow = blockSetToDelete
         if (blockSetShadow != null) {
             DeleteConfirmationModal(blockSetShadow.name, {
@@ -107,24 +116,39 @@ fun BlockSetListScreen(
 }
 
 @Composable
-fun BlockSetListItem(blockSet: AppBlockSetPreferences, onClick: () -> Unit, onDelete: () -> Unit, modifier: Modifier = Modifier) {
+fun BlockSetListItem(
+    blockSet: AppBlockSetPreferences,
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically,modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)) {
-            Column(modifier = Modifier.weight(9f).clickable(onClick = onClick)) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically, modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(9f)
+                    .clickable(onClick = onClick)
+            ) {
                 Text(
                     text = blockSet.name,
                     fontSize = 32.sp,
                     lineHeight = 32.sp,
                 )
                 Spacer(Modifier.height(4.dp))
-                Text(text = "${blockSet.blockList.size} apps", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                Text(
+                    text = "${blockSet.blockList.size} apps",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary
+                )
             }
             Spacer(Modifier)
             Icon(

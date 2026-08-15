@@ -87,7 +87,7 @@ fun BlockSetDetailsScreen(
                     .verticalScroll(rememberScrollState())
             ) {
                 Text(
-                    "${currBlockSet.name} blocked apps",
+                    "Block set: ${currBlockSet.name}",
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 24.sp,
                     modifier = Modifier.padding(16.dp)
@@ -97,10 +97,7 @@ fun BlockSetDetailsScreen(
                     val isLocked =
                         (now.epochSeconds - app.addedAt.epochSeconds) < LOCK_DURATION_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS
                     BlockedAppItem(app, isLocked, {
-                        viewModel.removePackageFromBlockList(
-                            app.appName,
-                            app.appPackageName
-                        )
+                        viewModel.removePackageFromBlockList(app.appPackageName)
                         scope.launch {
                             snackbarHostState.currentSnackbarData?.dismiss()
                             snackbarHostState.showSnackbar(message = "${app.appName} removed from block list!")

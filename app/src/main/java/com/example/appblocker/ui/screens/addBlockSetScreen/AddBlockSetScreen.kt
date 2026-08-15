@@ -91,7 +91,6 @@ fun AddBlockSetScreen(viewModel: AddBlockSetScreenViewModel, onAddBlockSet: () -
             )
             Spacer(Modifier.height(8.dp))
             Button(
-                enabled = blockSets.isNotEmpty(),
                 onClick = {
                     val blockSetToCreateName = nameTextFieldValue
                     keyboardController?.hide()
@@ -110,13 +109,7 @@ fun AddBlockSetScreen(viewModel: AddBlockSetScreenViewModel, onAddBlockSet: () -
                     }
                     onAddBlockSet()
                 }) {
-                Text(
-                    if (blockSets.isNotEmpty()) {
-                        "Create block set"
-                    } else {
-                        "Loading block sets..."
-                    }
-                )
+                Text("Create block set")
             }
         }
     }

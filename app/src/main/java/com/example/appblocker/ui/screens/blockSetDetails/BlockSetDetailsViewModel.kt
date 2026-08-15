@@ -37,7 +37,7 @@ class BlockSetDetailsScreenViewModel(
                 initialValue = listOf()
             )
 
-    fun removePackageFromBlockList(appName: String, appPackageName: String) {
+    fun removePackageFromBlockList(appPackageName: String) {
         viewModelScope.launch {
             dataStore.updateData { preferences ->
                 preferences.map {
