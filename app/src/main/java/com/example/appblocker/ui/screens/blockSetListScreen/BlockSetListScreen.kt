@@ -86,8 +86,8 @@ fun BlockSetListScreen(
 
             if (blockSets.isEmpty()) {
                 Text(
-                    "None exist. Tap + to create",
-                    fontSize = 24.sp,
+                    "No block sets exist. Tap + to create",
+                    fontSize = 16.sp,
                     color = TextSecondary,
                     modifier = Modifier.padding(16.dp)
                 )
@@ -147,7 +147,8 @@ fun BlockSetListItem(
                 Text(
                     text = "${blockSet.blockList.size} apps",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = TextSecondary
+                    color = TextSecondary,
+                    modifier = Modifier.padding(start = 8.dp)
                 )
             }
             Spacer(Modifier)

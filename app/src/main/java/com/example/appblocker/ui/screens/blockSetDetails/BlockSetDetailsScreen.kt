@@ -33,6 +33,7 @@ import com.example.appblocker.AppBlockItemPreferences
 import com.example.appblocker.add
 import com.example.appblocker.delete
 import com.example.appblocker.lock_clock
+import com.example.appblocker.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
 import kotlin.collections.listOf
 import kotlin.time.Clock
@@ -92,18 +93,29 @@ fun BlockSetDetailsScreen(
                     fontSize = 24.sp,
                     modifier = Modifier.padding(16.dp)
                 )
-                currBlockSet.blockList.forEach { app ->
-                    val now = Clock.System.now()
-                    val isLocked =
-                        (now.epochSeconds - app.addedAt.epochSeconds) < LOCK_DURATION_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS
-                    BlockedAppItem(app, isLocked, {
-                        viewModel.removePackageFromBlockList(app.appPackageName)
-                        scope.launch {
-                            snackbarHostState.currentSnackbarData?.dismiss()
-                            snackbarHostState.showSnackbar(message = "${app.appName} removed from block list!")
-                        }
-                    })
+
+                if (currBlockSet.blockList.isEmpty()) {
+                    Text(
+                        "Block list empty. Tap + to add",
+                        fontSize = 16.sp,
+                        color = TextSecondary,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                } else {
+                    currBlockSet.blockList.forEach { app ->
+                        val now = Clock.System.now()
+                        val isLocked =
+                            (now.epochSeconds - app.addedAt.epochSeconds) < LOCK_DURATION_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS
+                        BlockedAppItem(app, isLocked, {
+                            viewModel.removePackageFromBlockList(app.appPackageName)
+                            scope.launch {
+                                snackbarHostState.currentSnackbarData?.dismiss()
+                                snackbarHostState.showSnackbar(message = "${app.appName} removed from block list!")
+                            }
+                        })
+                    }
                 }
+
             }
         }
     }
