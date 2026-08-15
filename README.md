@@ -15,4 +15,3 @@ then follow instructions in app to grant the permission.
 
 ### Planned Changes
 - Add ability to configure on what days and time a block set is active
-- Beautify UI. Currently, it's bare minimum functional, no nice spaces or formatting
