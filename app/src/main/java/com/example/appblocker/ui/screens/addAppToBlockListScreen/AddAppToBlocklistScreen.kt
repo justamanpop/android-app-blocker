@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -93,12 +94,12 @@ fun AddAppToBlocklistScreen(viewModel: AddAppToBlockListScreenViewModel, blockSe
                     Modifier
                         .fillMaxSize()
                         .padding(padding)
+                        .padding(start = 16.dp, end = 8.dp)
                 ) {
                     Text(
                         "Add to block set ${blockSet.name}",
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 24.sp,
-                        modifier = Modifier.padding(16.dp)
                     )
                     OutlinedTextField(
                         state.searchTerm, { searchTerm ->
@@ -108,7 +109,7 @@ fun AddAppToBlocklistScreen(viewModel: AddAppToBlockListScreenViewModel, blockSe
                         singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(start = 4.dp, end = 4.dp)
+                            .padding(top = 4.dp)
                             .focusRequester(focusRequester)
                     )
 
@@ -118,67 +119,33 @@ fun AddAppToBlocklistScreen(viewModel: AddAppToBlockListScreenViewModel, blockSe
                             .border(2.dp, Color.Green)
                     )
                     LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
+                        contentPadding = PaddingValues(vertical = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
 
                         ) {
                         items(state.filteredApps.size) { index ->
                             val appName = state.filteredApps[index].appName
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 10.dp)
-                                    .clickable(onClick = {
-                                        viewModel.addAppPackageToBlockList(
-                                            appName,
-                                            state.filteredApps[index].appPackageName
-                                        )
-                                        scope.launch {
-                                            snackbarHostState.currentSnackbarData?.dismiss()
-                                            snackbarHostState.showSnackbar(message = "$appName added to block list!")
-                                        }
-                                    }),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(6.dp)
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.primary)
-                                )
-
-                                Spacer(Modifier.width(12.dp))
-
+                            Card() {
                                 Text(
                                     text = appName,
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            /*Row(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .clickable(onClick = {
-                                        viewModel.addAppPackageToBlockList(
-                                            appName,
-                                            state.filteredApps[index].appPackageName
-                                        )
-                                        scope.launch {
-                                            snackbarHostState.currentSnackbarData?.dismiss()
-                                            snackbarHostState.showSnackbar(message = "$appName added to block list!")
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                                        .clickable(onClick = {
+                                            viewModel.addAppPackageToBlockList(
+                                                appName,
+                                                state.filteredApps[index].appPackageName
+                                            )
+                                            scope.launch {
+                                                snackbarHostState.currentSnackbarData?.dismiss()
+                                                snackbarHostState.showSnackbar(message = "$appName added to block list!")
+                                            }
                                         }
-                                    })
-                            ) {
-                                Text(
-                                    appName,
-                                    fontSize = 32.sp,
-                                    lineHeight = 32.sp,
-                                    modifier = Modifier.padding(start = 16.dp)
+                                        )
                                 )
-                                Spacer(Modifier.width(8.dp))
                             }
-                            Spacer(Modifier.height(4.dp))
-                            HorizontalDivider(color = Color.Gray, thickness = 1.dp)*/
                         }
                     }
                 }
