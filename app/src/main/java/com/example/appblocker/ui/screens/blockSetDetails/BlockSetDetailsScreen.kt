@@ -44,7 +44,8 @@ import kotlin.time.ExperimentalTime
  * Meant to be large so that user cannot after adding remove an app any time soon in a
  * moment of weakness
  */
-const val LOCK_DURATION_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS = 60 * 60 * 24 * 7
+//const val LOCK_DURATION_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS = 60 * 60 * 24 * 7
+const val LOCK_DURATION_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS = 20
 
 @OptIn(ExperimentalTime::class)
 @Composable
