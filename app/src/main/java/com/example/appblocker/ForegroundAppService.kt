@@ -33,7 +33,7 @@ class ForegroundAppService : AccessibilityService() {
         super.onCreate()
 
         serviceScope.launch {
-            dataStore2.data.collect { blockSets ->
+            dataStore.data.collect { blockSets ->
                 val blockedPackageNamesFromPrefs =
                     blockSets.flatMap { blockSet -> blockSet.blockList }
                         .map { app -> app.appPackageName }

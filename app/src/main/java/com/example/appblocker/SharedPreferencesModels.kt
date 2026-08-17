@@ -2,6 +2,7 @@ package com.example.appblocker
 
 import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.Serializer
+import kotlinx.datetime.DayOfWeek
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json.Default.decodeFromString
@@ -15,7 +16,7 @@ import kotlin.time.Instant
 data class AppBlockItemPreferences @OptIn(ExperimentalTime::class) constructor(val appName: String, val appPackageName: String, val addedAt: Instant)
 
 @Serializable
-data class AppBlockSetPreferences @OptIn(ExperimentalTime::class) constructor(val id: Int, val name: String, val blockList: List<AppBlockItemPreferences>)
+data class AppBlockSetPreferences @OptIn(ExperimentalTime::class) constructor(val id: Int, val name: String, val blockList: List<AppBlockItemPreferences>, val activeDays: Map<DayOfWeek, Boolean>)
 
 
 object AppBlockSetPreferencesSerializer: Serializer<List<AppBlockSetPreferences>> {

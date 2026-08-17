@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.datetime.DayOfWeek
 
 class AddBlockSetScreenViewModelFactory(private val dataStore: DataStore<List<AppBlockSetPreferences>>) :
     ViewModelProvider.Factory {
@@ -31,22 +32,26 @@ class AddBlockSetScreenViewModel(val dataStore: DataStore<List<AppBlockSetPrefer
                 initialValue = listOf()
             )
 
-    fun validateBlockSetName(blockSetName: String): Result<Unit> {
+    fun validateForm(blockSetName: String): CreateBlockSetFormValidationResult {
+        var nameErrorMessage: String? = null
+
         if (blockSetName == "") {
-            return Result.failure(Exception("Block set name cannot be empty"))
+            nameErrorMessage =  "Block set name cannot be empty"
         }
         if (blockSetsFlow.value.any { bs -> bs.name == blockSetName }) {
-            return Result.failure(Exception("Block set with name $blockSetName already exists"))
+            nameErrorMessage = "Block set with name $blockSetName already exists"
         }
-        return Result.success(Unit)
+        return CreateBlockSetFormValidationResult(nameErrorMessage)
     }
 
-    fun createBlockSet(blockSetName: String) {
+    fun createBlockSet(blockSetName: String, activeDays: Map<DayOfWeek, Boolean>) {
         viewModelScope.launch {
             dataStore.updateData { curr ->
                 val maxId = curr.maxByOrNull { it.id }?.id ?: 1
-                curr + AppBlockSetPreferences(maxId + 1, blockSetName, listOf())
+                curr + AppBlockSetPreferences(maxId + 1, blockSetName, listOf(), activeDays)
             }
         }
     }
 }
+
+data class CreateBlockSetFormValidationResult(val nameErrorMessage: String?)

@@ -1,7 +1,6 @@
 package com.example.appblocker.ui.screens.blockSetListScreen
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,7 +12,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -37,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.appblocker.AppBlockSetPreferences
 import com.example.appblocker.add
 import com.example.appblocker.delete
+import com.example.appblocker.ui.shared.DaysOfWeekSelect
 import com.example.appblocker.ui.shared.DeleteConfirmationModal
 import com.example.appblocker.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
@@ -150,6 +149,20 @@ fun BlockSetListItem(
                     color = TextSecondary,
                     modifier = Modifier.padding(start = 8.dp)
                 )
+                if (blockSet.activeDays.values.all { !it }) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = "⚠\uFE0F Block set not active on any day",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary,
+                        modifier = Modifier.padding(start = 6.dp)
+                    )
+                } else {
+                    Spacer(Modifier.height(8.dp))
+                    DaysOfWeekSelect(daysState = blockSet.activeDays, readonly = true, dayBoxSize = Pair(28.dp, 28.dp), dayTextSize = 12.sp)
+                }
+
+
             }
             Spacer(Modifier)
             Icon(
