@@ -13,18 +13,30 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 @Serializable
-data class AppBlockItemPreferences @OptIn(ExperimentalTime::class) constructor(val appName: String, val appPackageName: String, val addedAt: Instant)
+data class AppBlockItemPreferences @OptIn(ExperimentalTime::class) constructor(
+    val appName: String,
+    val appPackageName: String,
+    val addedAt: Instant
+)
 
 @Serializable
-data class AppBlockSetPreferences @OptIn(ExperimentalTime::class) constructor(val id: Int, val name: String, val blockList: List<AppBlockItemPreferences>, val activeDays: Map<DayOfWeek, Boolean>)
+data class AppBlockSetPreferences @OptIn(ExperimentalTime::class) constructor(
+    val id: Int,
+    val name: String,
+    val blockList: List<AppBlockItemPreferences>,
+    val activeDays: Map<DayOfWeek, Boolean>,
+    val activeTime: String,
+)
 
 
-object AppBlockSetPreferencesSerializer: Serializer<List<AppBlockSetPreferences>> {
+object AppBlockSetPreferencesSerializer : Serializer<List<AppBlockSetPreferences>> {
     override val defaultValue: List<AppBlockSetPreferences> = listOf()
 
     override suspend fun readFrom(input: InputStream): List<AppBlockSetPreferences> {
         try {
-            return decodeFromString<List<AppBlockSetPreferences>>(input.readBytes().decodeToString())
+            return decodeFromString<List<AppBlockSetPreferences>>(
+                input.readBytes().decodeToString()
+            )
         } catch (serialization: SerializationException) {
             throw CorruptionException("Unable to read App Block List preferences", serialization)
         }

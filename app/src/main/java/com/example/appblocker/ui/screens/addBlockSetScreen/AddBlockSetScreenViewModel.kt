@@ -1,5 +1,6 @@
 package com.example.appblocker.ui.screens.addBlockSetScreen
 
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -32,26 +33,31 @@ class AddBlockSetScreenViewModel(val dataStore: DataStore<List<AppBlockSetPrefer
                 initialValue = listOf()
             )
 
-    fun validateForm(blockSetName: String): CreateBlockSetFormValidationResult {
+    fun validateForm(blockSetName: String, activeTime: String, blockSets: List<AppBlockSetPreferences>): CreateBlockSetFormValidationResult {
         var nameErrorMessage: String? = null
+        var activeTimeErrorMessage: String? = null
 
         if (blockSetName == "") {
             nameErrorMessage =  "Block set name cannot be empty"
         }
-        if (blockSetsFlow.value.any { bs -> bs.name == blockSetName }) {
+        if (blockSets.any { bs -> bs.name == blockSetName }) {
             nameErrorMessage = "Block set with name $blockSetName already exists"
         }
-        return CreateBlockSetFormValidationResult(nameErrorMessage)
+
+        if (activeTime == "") {
+            activeTimeErrorMessage =  "Block time cannot be empty. Click All Day to enable it at all times"
+        }
+        return CreateBlockSetFormValidationResult(nameErrorMessage, activeTimeErrorMessage)
     }
 
-    fun createBlockSet(blockSetName: String, activeDays: Map<DayOfWeek, Boolean>) {
+    fun createBlockSet(blockSetName: String, activeDays: Map<DayOfWeek, Boolean>, activeTime: String) {
         viewModelScope.launch {
             dataStore.updateData { curr ->
                 val maxId = curr.maxByOrNull { it.id }?.id ?: 1
-                curr + AppBlockSetPreferences(maxId + 1, blockSetName, listOf(), activeDays)
+                curr + AppBlockSetPreferences(maxId + 1, blockSetName, listOf(), activeDays, activeTime)
             }
         }
     }
 }
 
-data class CreateBlockSetFormValidationResult(val nameErrorMessage: String?)
+data class CreateBlockSetFormValidationResult(val nameErrorMessage: String?, val activeTimeErrorMessage: String?)
