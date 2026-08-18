@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.appblocker.ui.theme.Surface
+import com.example.appblocker.ui.theme.SurfaceVariant
 import com.example.appblocker.ui.theme.TextPrimary
 import com.example.appblocker.ui.theme.TextSecondary
 import kotlinx.datetime.DayOfWeek
@@ -43,15 +44,19 @@ fun DaysOfWeekSelect(
             Box(
                 Modifier
                     .clip(CircleShape)
-                    .background(Surface)
+                    .then(if (daysState[d] == true) Modifier.background(Color(0xFF1457F5)) else Modifier)
                     .height(dayBoxSize.first)
                     .width(dayBoxSize.second)
                     .padding(4.dp)
-                    .clickable(onClick = {
+                    .then(
                         if (!readonly) {
-                            onDayClick(daysState + (d to !daysState[d]!!))
+                            Modifier.clickable(onClick = {
+                                onDayClick(daysState + (d to !daysState[d]!!))
+                            })
+                        } else {
+                            Modifier
                         }
-                    })
+                    )
             ) {
                 Text(
                     d.toString().substring(0, 1),

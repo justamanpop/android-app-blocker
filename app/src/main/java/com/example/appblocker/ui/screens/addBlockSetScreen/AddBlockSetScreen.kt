@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.appblocker.ui.shared.DaysOfWeekSelect
@@ -42,6 +43,7 @@ fun AddBlockSetScreen(viewModel: AddBlockSetScreenViewModel, onAddBlockSet: () -
     val keyboardController = LocalSoftwareKeyboardController.current
 
     var nameTextFieldValue by remember { mutableStateOf("") }
+    var nameTextFieldError by rememberSaveable { mutableStateOf<String?>(null) }
 
     var activeDays by remember {
         mutableStateOf(
@@ -57,7 +59,8 @@ fun AddBlockSetScreen(viewModel: AddBlockSetScreenViewModel, onAddBlockSet: () -
         )
     }
 
-    var nameTextFieldError by rememberSaveable { mutableStateOf<String?>(null) }
+    var activeTimeTextFieldValue by remember { mutableStateOf("") }
+    var activeTimeTextFieldError by rememberSaveable { mutableStateOf<String?>(null) }
 
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) {
@@ -99,27 +102,38 @@ fun AddBlockSetScreen(viewModel: AddBlockSetScreenViewModel, onAddBlockSet: () -
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                 isError = nameTextFieldError != null,
                 supportingText = {
-                    val error = nameTextFieldError
-                    if (error != null) {
-                        Text(error)
-                    }
+                    Text(nameTextFieldError ?: "")
                 },
                 modifier = Modifier.focusRequester(focusRequester)
             )
 
             Spacer(Modifier.height(8.dp))
 
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text("Days of week", fontSize = 16.sp)
-                DaysOfWeekSelect(
-                    daysState = activeDays,
-                    readonly = false,
-                    modifier = Modifier
-                        .border(1.dp, Border, shape = RoundedCornerShape(8.dp))
-                        .padding(8.dp),
-                    onDayClick = { days -> activeDays = days },
-                )
-            }
+            Text("Days of week", fontSize = 16.sp)
+            DaysOfWeekSelect(
+                daysState = activeDays,
+                readonly = false,
+                modifier = Modifier
+                    .border(1.dp, Border, shape = RoundedCornerShape(8.dp))
+                    .padding(8.dp),
+                onDayClick = { days -> activeDays = days },
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            OutlinedTextField(
+                activeTimeTextFieldValue, {
+                    activeTimeTextFieldValue = it
+                },
+                label = { Text("Time") },
+                placeholder = { Text("0000-1300,1500-2000") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                isError = activeTimeTextFieldError != null,
+                supportingText = {
+                    Text(activeTimeTextFieldError ?: "")
+                },
+                modifier = Modifier.focusRequester(focusRequester)
+            )
 
             Spacer(Modifier.height(16.dp))
             Button(
