@@ -33,7 +33,12 @@ val Context.dataStore: DataStore<List<AppBlockSetPreferences>> by dataStore(
 @Composable
 fun AppNavigation(modifier: Modifier = Modifier, appRepository: AppRepository) {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "home", modifier = modifier) {
+    NavHost(
+        navController = navController,
+//        startDestination = "home",
+        startDestination = "block_set_list",
+        modifier = modifier
+    ) {
         composable("home") {
             App(onNavigateToManageBlockSets = { navController.navigate("block_set_list") })
         }
