@@ -34,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -70,8 +71,6 @@ fun BlockSetListScreen(
     )
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
-
-    val progress = remember { Animatable(0f) }
 
     var blockSetToDelete by remember { mutableStateOf<AppBlockSetPreferences?>(null) }
     Scaffold(
@@ -114,12 +113,13 @@ fun BlockSetListScreen(
             }
 
             blockSets.forEach { blockSet ->
-                BlockSetListItem(
-                    blockSet,
-                    { navigateToBlockSetDetails(blockSet.id) },
-                    { blockSetToDelete = blockSet },
-                    progress
-                )
+                key(blockSet.id) {
+                    BlockSetListItem(
+                        blockSet,
+                        { navigateToBlockSetDetails(blockSet.id) },
+                        { blockSetToDelete = blockSet },
+                    )
+                }
             }
         }
         val blockSetShadow = blockSetToDelete
@@ -127,14 +127,12 @@ fun BlockSetListScreen(
             DeleteConfirmationModal(blockSetShadow.name, {
                 viewModel.deleteBlockSet(blockSetShadow.id)
                 scope.launch {
-                    progress.animateTo(0f, tween(200))
                     snackbarHostState.currentSnackbarData?.dismiss()
                     snackbarHostState.showSnackbar(message = "Block set ${blockSetShadow.name} deleted!")
                 }
             }, {
                 blockSetToDelete = null
                 scope.launch {
-                    progress.animateTo(0f, tween(200))
                 }
             })
         }
@@ -146,9 +144,9 @@ fun BlockSetListItem(
     blockSet: AppBlockSetPreferences,
     onClick: () -> Unit,
     onDelete: () -> Unit,
-    progress: Animatable<Float, AnimationVector1D>,
     modifier: Modifier = Modifier
 ) {
+    val progress = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
     Card(
         modifier = modifier
@@ -219,13 +217,13 @@ fun BlockSetListItem(
                         .size(32.dp)
                         .align(Alignment.CenterVertically)
                         .weight(1f)
-                        //                    .clickable(onClick = onDelete)
                         .pointerInput(Unit) {
                             awaitEachGesture {
                                 awaitFirstDown()
                                 val job = scope.launch {
                                     progress.animateTo(1f, tween(1500))
                                     onDelete()
+                                    progress.animateTo(0f, tween(200))
                                 }
                                 waitForUpOrCancellation()
                                 job.cancel()

@@ -35,8 +35,7 @@ fun AppNavigation(modifier: Modifier = Modifier, appRepository: AppRepository) {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-//        startDestination = "home",
-        startDestination = "block_set_list",
+        startDestination = "home",
         modifier = modifier
     ) {
         composable("home") {

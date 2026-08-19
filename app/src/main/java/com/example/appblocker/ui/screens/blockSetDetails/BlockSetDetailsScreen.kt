@@ -1,6 +1,12 @@
 package com.example.appblocker.ui.screens.blockSetDetails
 
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.IconButton
 import androidx.compose.foundation.layout.Row
@@ -20,11 +26,15 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,6 +43,7 @@ import com.example.appblocker.AppBlockItemPreferences
 import com.example.appblocker.add
 import com.example.appblocker.delete
 import com.example.appblocker.lock_clock
+import com.example.appblocker.ui.theme.Error
 import com.example.appblocker.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
 import kotlin.collections.listOf
@@ -107,13 +118,15 @@ fun BlockSetDetailsScreen(
                         val now = Clock.System.now()
                         val isLocked =
                             (now.epochSeconds - app.addedAt.epochSeconds) < LOCK_DURATION_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS
-                        BlockedAppItem(app, isLocked, {
-                            viewModel.removePackageFromBlockList(app.appPackageName)
-                            scope.launch {
-                                snackbarHostState.currentSnackbarData?.dismiss()
-                                snackbarHostState.showSnackbar(message = "${app.appName} removed from block list!")
-                            }
-                        })
+                        key(app.appPackageName) {
+                            BlockedAppItem(app, isLocked, {
+                                viewModel.removePackageFromBlockList(app.appPackageName)
+                                scope.launch {
+                                    snackbarHostState.currentSnackbarData?.dismiss()
+                                    snackbarHostState.showSnackbar(message = "${app.appName} removed from block list!")
+                                }
+                            })
+                        }
                     }
                 }
 
@@ -129,49 +142,80 @@ fun BlockedAppItem(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val progress = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
+
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically, modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+        Box(
         ) {
-            Text(
-                text = blockedApp.appName,
-                fontSize = 32.sp,
-                lineHeight = 32.sp,
-                color = if (isLocked) Color.Gray else Color.White,
-                modifier = Modifier.weight(9f)
-            )
-            Spacer(Modifier)
-            if (isLocked) {
-                IconButton(
-                    {}, enabled = false,
-                    modifier =
-                        Modifier
+            Box(
+                Modifier
+                    .matchParentSize()
+                    .graphicsLayer() {
+                        scaleY = progress.value
+                        transformOrigin = TransformOrigin(0.5f, 1f)
+                    }
+                    .background(Error.copy(0.6f))
+            ) {}
+            Row(
+                verticalAlignment = Alignment.CenterVertically, modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = blockedApp.appName,
+                    fontSize = 32.sp,
+                    lineHeight = 32.sp,
+                    color = if (isLocked) Color.Gray else Color.White,
+                    modifier = Modifier.weight(9f)
+                )
+                Spacer(Modifier)
+                if (isLocked) {
+                    IconButton(
+                        {}, enabled = false,
+                        modifier =
+                            Modifier
+                                .padding(end = 8.dp)
+                                .align(Alignment.CenterVertically)
+                                .weight(1f)
+                    ) {
+                        Icon(
+                            lock_clock,
+                            "cannot remove from blocklist before waiting one day",
+                        )
+                    }
+                } else {
+                    Icon(
+                        delete,
+                        "remove from block list",
+                        modifier = Modifier
                             .padding(end = 8.dp)
                             .align(Alignment.CenterVertically)
                             .weight(1f)
-                ) {
-                    Icon(
-                        lock_clock,
-                        "cannot remove from blocklist before waiting one day",
+                            .pointerInput(Unit) {
+                                awaitEachGesture {
+                                    awaitFirstDown()
+                                    val job = scope.launch {
+                                        progress.animateTo(1f, tween(1000))
+                                        onDelete()
+                                        progress.animateTo(0f, tween(200))
+                                    }
+                                    waitForUpOrCancellation()
+                                    job.cancel()
+                                    if (progress.value < 1f) {
+                                        scope.launch {
+                                            progress.animateTo(0f, tween(200))
+                                        }
+                                    }
+                                }
+                            }
                     )
                 }
-            } else {
-                Icon(
-                    delete,
-                    "remove from block list",
-                    modifier = Modifier
-                        .padding(end = 8.dp)
-                        .align(Alignment.CenterVertically)
-                        .weight(1f)
-                        .clickable(onClick = onDelete)
-                )
             }
         }
     }
