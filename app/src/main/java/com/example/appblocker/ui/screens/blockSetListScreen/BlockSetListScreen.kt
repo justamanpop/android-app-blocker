@@ -204,6 +204,8 @@ fun BlockSetListItem(
                             dayTextSize = 12.sp
                         )
                     }
+                    Spacer(Modifier.height(8.dp))
+                    Text(formatActiveTime(blockSet.activeTime))
 
 
                 }
@@ -221,7 +223,7 @@ fun BlockSetListItem(
                             awaitEachGesture {
                                 awaitFirstDown()
                                 val job = scope.launch {
-                                    progress.animateTo(1f, tween(1500))
+                                    progress.animateTo(1f, tween(1000))
                                     onDelete()
                                     progress.animateTo(0f, tween(200))
                                 }
@@ -238,4 +240,13 @@ fun BlockSetListItem(
             }
         }
     }
+}
+
+
+fun formatActiveTime(activeTime: String) : String {
+    val activeTimes = activeTime.split(",")
+    return activeTimes.map {
+        activeTime ->
+       activeTime.substring(0,2) + ":" + activeTime.substring(2,4) + "-" + activeTime.substring(5,7) + ":" + activeTime.substring(7,9)
+    }.joinToString()
 }
