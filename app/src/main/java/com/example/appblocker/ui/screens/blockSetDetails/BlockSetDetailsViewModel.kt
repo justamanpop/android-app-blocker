@@ -5,10 +5,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.appblocker.AppBlockSetPreferences
+import com.example.appblocker.CreateBlockSetFormValidationResult
+import com.example.appblocker.validateActiveTime
+import com.example.appblocker.validateBlockSetName
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.datetime.DayOfWeek
 
 class BlockSetDetailsScreenViewModelFactory(
     private val dataStore: DataStore<List<AppBlockSetPreferences>>,
@@ -50,5 +54,31 @@ class BlockSetDetailsScreenViewModel(
                 }
             }
         }
+    }
+
+    fun updateBlockSet(name: String, activeDays: Map<DayOfWeek, Boolean>, activeTime: String) {
+        viewModelScope.launch {
+            dataStore.updateData { preferences ->
+                preferences.map {
+                        blockSet ->
+                    if (blockSet.id == blockSetId) {
+                        blockSet.copy(name = name, activeDays = activeDays, activeTime = activeTime)
+                    } else {
+                        blockSet
+                    }
+                }
+            }
+        }
+    }
+
+    fun validateForm(
+        blockSetName: String,
+        activeTime: String,
+        blockSets: List<AppBlockSetPreferences>
+    ): CreateBlockSetFormValidationResult {
+        val nameErrorMessage: String? = validateBlockSetName(blockSetName, blockSets, true)
+        val activeTimeErrorMessage = validateActiveTime(activeTime)
+
+        return CreateBlockSetFormValidationResult(nameErrorMessage, activeTimeErrorMessage)
     }
 }

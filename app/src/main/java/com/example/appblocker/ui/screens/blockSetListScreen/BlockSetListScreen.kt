@@ -223,7 +223,7 @@ fun BlockSetListItem(
                             awaitEachGesture {
                                 awaitFirstDown()
                                 val job = scope.launch {
-                                    progress.animateTo(1f, tween(1000))
+                                    progress.animateTo(1f, tween(500))
                                     onDelete()
                                     progress.animateTo(0f, tween(200))
                                 }

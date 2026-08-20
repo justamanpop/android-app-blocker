@@ -14,9 +14,7 @@ For accessibility permission, need to go to Settings > Apps > App Blocker > Clic
 then follow instructions in app to grant the permission.
 
 ### Planned Changes
-- Add ability for block set to be active at specific times
 - Disable deleting of block set for x amount of time after creation
-- Add an edit block set page to edit name, active period
 - Add better visual indication that something is not deletable (tooltip with when it's available to edit maybe)
 - Add tooltips/improve UX for initial grant permissions modal for each permission
 - Add info somewhere that this app does not allow to undo/change blocked app for x amount of time. Maybe a one time welcome screen or a help button
