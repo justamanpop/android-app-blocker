@@ -226,12 +226,6 @@ fun BlockSetListItem(
                 Spacer(Modifier)
                 if (isLocked) {
                     val tooltipState = rememberTooltipState(isPersistent = true)
-                    Icon(
-                        lock_clock,
-                        "cannot remove from blocklist before waiting for min duration",
-                        modifier = Modifier
-                            .clickable(onClick = { scope.launch { tooltipState.show() } })
-                    )
                     TooltipBox(
                         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
                             TooltipAnchorPosition.Below
@@ -239,6 +233,12 @@ fun BlockSetListItem(
                         tooltip = { PlainTooltip() { Text("Block set cannot be deleted for $LOCK_DURATION_OF_BLOCK_SET_AFTER_EDIT seconds after creation or updating") } },
                         state = tooltipState,
                     ) {}
+                    Icon(
+                        lock_clock,
+                        "cannot remove from blocklist before waiting for min duration",
+                        modifier = Modifier
+                            .clickable(onClick = { scope.launch { tooltipState.show() } })
+                    )
                 } else {
                     Icon(
                         delete,
