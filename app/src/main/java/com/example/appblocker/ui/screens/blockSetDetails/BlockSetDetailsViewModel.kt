@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DayOfWeek
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 class BlockSetDetailsScreenViewModelFactory(
     private val dataStore: DataStore<List<AppBlockSetPreferences>>,
@@ -41,6 +43,7 @@ class BlockSetDetailsScreenViewModel(
                 initialValue = listOf()
             )
 
+    @OptIn(ExperimentalTime::class)
     fun removePackageFromBlockList(appPackageName: String) {
         viewModelScope.launch {
             dataStore.updateData { preferences ->
@@ -56,13 +59,14 @@ class BlockSetDetailsScreenViewModel(
         }
     }
 
+    @OptIn(ExperimentalTime::class)
     fun updateBlockSet(name: String, activeDays: Map<DayOfWeek, Boolean>, activeTime: String) {
         viewModelScope.launch {
             dataStore.updateData { preferences ->
                 preferences.map {
                         blockSet ->
                     if (blockSet.id == blockSetId) {
-                        blockSet.copy(name = name, activeDays = activeDays, activeTime = activeTime)
+                        blockSet.copy(name = name, activeDays = activeDays, activeTime = activeTime, lastUpdatedAt = Clock.System.now())
                     } else {
                         blockSet
                     }

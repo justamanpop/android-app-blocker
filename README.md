@@ -1,7 +1,8 @@
 ## App blocker
 
 ### Function
-When a blocked app is in the foreground, shows an overlay blocking interaction with it.
+Create block sets containing list of apps to block and what days and time they are active in. 
+When an app in an active block set is in the foreground, shows an overlay blocking interaction with it.
 
 ### Permissions needed
 Needs Accessibility service permission, display notification permission (to run as a foreground service so

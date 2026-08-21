@@ -20,11 +20,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -84,7 +82,8 @@ import kotlin.time.ExperimentalTime
  * moment of weakness
  */
 //const val LOCK_DURATION_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS = 60 * 60 * 24 * 7
-const val LOCK_DURATION_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS = 20
+const val LOCK_DURATION_OF_BLOCK_LIST_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS = 20
+const val LOCK_DURATION_OF_BLOCK_SET_AFTER_EDIT = 20
 
 @OptIn(ExperimentalTime::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -270,7 +269,7 @@ fun BlockSetDetailsScreen(
                            idx ->
                             val app = currBlockSet.blockList[idx]
                             val isLocked =
-                                (now.epochSeconds - app.addedAt.epochSeconds) < LOCK_DURATION_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS
+                                (now.epochSeconds - app.addedAt.epochSeconds) < LOCK_DURATION_OF_BLOCK_LIST_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS
                             key(app.appPackageName) {
                                 BlockedAppItem(app, isLocked, {
                                     viewModel.removePackageFromBlockList(app.appPackageName)

@@ -91,7 +91,8 @@ class AddAppToBlockListScreenViewModel(
                                 appName,
                                 appPackageName,
                                 Clock.System.now()
-                            )
+                            ),
+                            lastUpdatedAt = Clock.System.now()
                         )
                     } else {
                         blockSet

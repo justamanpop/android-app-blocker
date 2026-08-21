@@ -26,6 +26,7 @@ data class AppBlockSetPreferences @OptIn(ExperimentalTime::class) constructor(
     val blockList: List<AppBlockItemPreferences>,
     val activeDays: Map<DayOfWeek, Boolean>,
     val activeTime: String,
+    val lastUpdatedAt: Instant
 )
 
 
