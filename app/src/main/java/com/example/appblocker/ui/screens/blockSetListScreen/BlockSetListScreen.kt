@@ -16,18 +16,25 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -48,6 +55,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.appblocker.AppBlockSetPreferences
 import com.example.appblocker.add
 import com.example.appblocker.delete
+import com.example.appblocker.info_i
 import com.example.appblocker.lock_clock
 import com.example.appblocker.ui.screens.blockSetDetails.LOCK_DURATION_OF_BLOCK_SET_AFTER_EDIT
 import com.example.appblocker.ui.shared.DaysOfWeekSelect
@@ -143,6 +151,7 @@ fun BlockSetListScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BlockSetListItem(
     blockSet: AppBlockSetPreferences,
@@ -216,21 +225,20 @@ fun BlockSetListItem(
                 }
                 Spacer(Modifier)
                 if (isLocked) {
-                    IconButton(
-                        {}, enabled = false,
-                        modifier =
-                            Modifier
-                                .padding(end = 4.dp)
-                                .background(Surface)
-                                .size(32.dp)
-                                .align(Alignment.CenterVertically)
-                                .weight(1f)
-                    ) {
-                        Icon(
-                            lock_clock,
-                            "cannot remove from blocklist before waiting for min duration",
-                        )
-                    }
+                    val tooltipState = rememberTooltipState(isPersistent = true)
+                    Icon(
+                        lock_clock,
+                        "cannot remove from blocklist before waiting for min duration",
+                        modifier = Modifier
+                            .clickable(onClick = { scope.launch { tooltipState.show() } })
+                    )
+                    TooltipBox(
+                        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                            TooltipAnchorPosition.Below
+                        ),
+                        tooltip = { PlainTooltip() { Text("Block set cannot be deleted for $LOCK_DURATION_OF_BLOCK_SET_AFTER_EDIT seconds after creation or updating") } },
+                        state = tooltipState,
+                    ) {}
                 } else {
                     Icon(
                         delete,
@@ -266,10 +274,12 @@ fun BlockSetListItem(
 }
 
 
-fun formatActiveTime(activeTime: String) : String {
+fun formatActiveTime(activeTime: String): String {
     val activeTimes = activeTime.split(",")
-    return activeTimes.map {
-        activeTime ->
-       activeTime.substring(0,2) + ":" + activeTime.substring(2,4) + "-" + activeTime.substring(5,7) + ":" + activeTime.substring(7,9)
+    return activeTimes.map { activeTime ->
+        activeTime.substring(0, 2) + ":" + activeTime.substring(
+            2,
+            4
+        ) + "-" + activeTime.substring(5, 7) + ":" + activeTime.substring(7, 9)
     }.joinToString()
 }
