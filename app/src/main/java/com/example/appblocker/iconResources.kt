@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
 @Suppress("CheckReturnValue")
-public val add: ImageVector
+val add: ImageVector
     get() {
         if (_add != null) {
             return _add!!
@@ -225,3 +225,54 @@ public val lock_clock: ImageVector
     }
 
 private var _lock_clock: ImageVector? = null
+
+@Suppress("CheckReturnValue")
+public val info_i: ImageVector
+    get() {
+        if (_info_i != null) {
+            return _info_i!!
+        }
+        _info_i =
+            ImageVector.Builder(
+                name = "info_i",
+                defaultWidth = 24.dp,
+                defaultHeight = 24.dp,
+                viewportWidth = 24f,
+                viewportHeight = 24f,
+            )
+                .apply {
+                    path(
+                        fill = SolidColor(Color.Black),
+                        fillAlpha = 1f,
+                        stroke = null,
+                        strokeAlpha = 1f,
+                        strokeLineWidth = 1f,
+                        strokeLineCap = StrokeCap.Butt,
+                        strokeLineJoin = StrokeJoin.Bevel,
+                        strokeLineMiter = 1f,
+                        pathFillType = PathFillType.Companion.NonZero,
+                    ) {
+                        moveTo(10.59f, 6.41f)
+                        quadTo(10f, 5.82f, 10f, 5f)
+                        quadTo(10f, 4.17f, 10.59f, 3.59f)
+                        reflectiveQuadTo(12f, 3f)
+                        reflectiveQuadToRelative(1.41f, 0.59f)
+                        reflectiveQuadTo(14f, 5f)
+                        quadToRelative(0f, 0.82f, -0.59f, 1.41f)
+                        reflectiveQuadTo(12f, 7f)
+                        reflectiveQuadTo(10.59f, 6.41f)
+                        close()
+                        moveTo(10.5f, 21f)
+                        verticalLineTo(9f)
+                        horizontalLineToRelative(3f)
+                        verticalLineTo(21f)
+                        horizontalLineToRelative(-3f)
+                        close()
+                    }
+                }
+                .build()
+        return _info_i!!
+    }
+
+private var _info_i: ImageVector? = null
+

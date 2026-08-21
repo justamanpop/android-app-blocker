@@ -18,6 +18,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 class ForegroundAppService : AccessibilityService() {
     private var lastPackageName: String? = null
@@ -28,14 +32,28 @@ class ForegroundAppService : AccessibilityService() {
     private var blockedPackageNames: Set<String> = setOf()
     private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
+    @OptIn(ExperimentalTime::class)
     @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     override fun onCreate() {
         super.onCreate()
 
         serviceScope.launch {
-            dataStore2.data.collect { blockSets ->
+            dataStore.data.collect { blockSets ->
+                val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                val paddedCurrentHourMinute = now.hour.toString().padStart(2, '0') + now.minute.toString().padStart(2, '0')
+
                 val blockedPackageNamesFromPrefs =
-                    blockSets.flatMap { blockSet -> blockSet.blockList }
+                    blockSets
+                        .filter { blockSet -> blockSet.activeDays[now.dayOfWeek] == true }
+                        .filter { blockSet ->
+                            val activeTimes = blockSet.activeTime.split(",")
+                           activeTimes.any {
+                               timeRange ->
+                                timeRange.substring(0,4) <= paddedCurrentHourMinute && paddedCurrentHourMinute <= timeRange.substring(5,9)
+                           }
+
+                        }
+                        .flatMap { blockSet -> blockSet.blockList }
                         .map { app -> app.appPackageName }
                 blockedPackageNames = blockedPackageNamesFromPrefs.toSet()
             }

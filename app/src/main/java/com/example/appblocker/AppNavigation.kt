@@ -25,7 +25,7 @@ import com.example.appblocker.ui.screens.blockSetListScreen.BlockSetListScreen
 import com.example.appblocker.ui.screens.blockSetListScreen.BlockSetListScreenViewModel
 import com.example.appblocker.ui.screens.blockSetListScreen.BlockSetListScreenViewModelFactory
 
-val Context.dataStore2: DataStore<List<AppBlockSetPreferences>> by dataStore(
+val Context.dataStore: DataStore<List<AppBlockSetPreferences>> by dataStore(
     fileName = "appBlockSet.json",
     serializer = AppBlockSetPreferencesSerializer
 )
@@ -33,13 +33,17 @@ val Context.dataStore2: DataStore<List<AppBlockSetPreferences>> by dataStore(
 @Composable
 fun AppNavigation(modifier: Modifier = Modifier, appRepository: AppRepository) {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "home", modifier = modifier) {
+    NavHost(
+        navController = navController,
+        startDestination = "home",
+        modifier = modifier
+    ) {
         composable("home") {
             App(onNavigateToManageBlockSets = { navController.navigate("block_set_list") })
         }
         composable("block_set_list") {
             val viewModel: BlockSetListScreenViewModel =
-                viewModel(factory = BlockSetListScreenViewModelFactory(LocalContext.current.dataStore2))
+                viewModel(factory = BlockSetListScreenViewModelFactory(LocalContext.current.dataStore))
             BlockSetListScreen(
                 viewModel,
                 { navController.navigate("add_block_set") },
@@ -47,7 +51,7 @@ fun AppNavigation(modifier: Modifier = Modifier, appRepository: AppRepository) {
         }
         composable("add_block_set") {
             val viewModel: AddBlockSetScreenViewModel =
-                viewModel(factory = AddBlockSetScreenViewModelFactory(LocalContext.current.dataStore2))
+                viewModel(factory = AddBlockSetScreenViewModelFactory(LocalContext.current.dataStore))
             AddBlockSetScreen(
                 viewModel,
                 { navController.navigate("block_set_list") })
@@ -60,7 +64,7 @@ fun AppNavigation(modifier: Modifier = Modifier, appRepository: AppRepository) {
             val id = backStackEntry.arguments?.getInt("id") ?: 0
             val viewModel: BlockSetDetailsScreenViewModel = viewModel(
                 factory = BlockSetDetailsScreenViewModelFactory(
-                    LocalContext.current.dataStore2,
+                    LocalContext.current.dataStore,
                     id
                 )
             )
@@ -79,7 +83,7 @@ fun AppNavigation(modifier: Modifier = Modifier, appRepository: AppRepository) {
             val viewModel: AddAppToBlockListScreenViewModel =
                 viewModel(
                     factory = AddAppToBlockListScreenViewModelFactory(
-                        LocalContext.current.dataStore2, id, appRepository
+                        LocalContext.current.dataStore, id, appRepository
                     )
                 )
             AddAppToBlocklistScreen(viewModel, id)

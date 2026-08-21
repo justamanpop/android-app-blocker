@@ -5,10 +5,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.appblocker.AppBlockSetPreferences
+import com.example.appblocker.CreateBlockSetFormValidationResult
+import com.example.appblocker.validateActiveTime
+import com.example.appblocker.validateBlockSetName
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.datetime.DayOfWeek
 
 class AddBlockSetScreenViewModelFactory(private val dataStore: DataStore<List<AppBlockSetPreferences>>) :
     ViewModelProvider.Factory {
@@ -31,21 +35,33 @@ class AddBlockSetScreenViewModel(val dataStore: DataStore<List<AppBlockSetPrefer
                 initialValue = listOf()
             )
 
-    fun validateBlockSetName(blockSetName: String): Result<Unit> {
-        if (blockSetName == "") {
-            return Result.failure(Exception("Block set name cannot be empty"))
-        }
-        if (blockSetsFlow.value.any { bs -> bs.name == blockSetName }) {
-            return Result.failure(Exception("Block set with name $blockSetName already exists"))
-        }
-        return Result.success(Unit)
+    fun validateForm(
+        blockSetName: String,
+        activeTime: String,
+        blockSets: List<AppBlockSetPreferences>
+    ): CreateBlockSetFormValidationResult {
+        val nameErrorMessage: String? = validateBlockSetName(blockSetName, blockSets, false)
+        val activeTimeErrorMessage = validateActiveTime(activeTime)
+
+        return CreateBlockSetFormValidationResult(nameErrorMessage, activeTimeErrorMessage)
     }
 
-    fun createBlockSet(blockSetName: String) {
+    fun createBlockSet(
+        blockSetName: String,
+        activeDays: Map<DayOfWeek, Boolean>,
+        activeTime: String
+    ) {
+        val orderedActiveTime = activeTime.split(",").sorted().joinToString(",")
         viewModelScope.launch {
             dataStore.updateData { curr ->
                 val maxId = curr.maxByOrNull { it.id }?.id ?: 1
-                curr + AppBlockSetPreferences(maxId + 1, blockSetName, listOf())
+                curr + AppBlockSetPreferences(
+                    maxId + 1,
+                    blockSetName,
+                    listOf(),
+                    activeDays,
+                    orderedActiveTime
+                )
             }
         }
     }

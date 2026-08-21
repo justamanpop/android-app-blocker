@@ -11,10 +11,10 @@ val Background = Color(0xFF0A0A0A)
 val OnBackground = Color(0xFFF5F5F5)
 
 // Surface
-val Surface = Color(0xFF121212)
+val Surface = Color(0xFF1A1A1A)
 val OnSurface = Color(0xFFF5F5F5)
 
-val SurfaceVariant = Color(0xFF1A1A1A)
+val SurfaceVariant = Color(0xFF0018EC)
 val OnSurfaceVariant = Color(0xFFB3B3B3)
 
 // Outline
