@@ -24,10 +24,17 @@ import com.example.appblocker.ui.screens.blockSetDetails.BlockSetDetailsScreenVi
 import com.example.appblocker.ui.screens.blockSetListScreen.BlockSetListScreen
 import com.example.appblocker.ui.screens.blockSetListScreen.BlockSetListScreenViewModel
 import com.example.appblocker.ui.screens.blockSetListScreen.BlockSetListScreenViewModelFactory
+import com.example.appblocker.ui.screens.settingsScreen.SettingsScreen
+import com.example.appblocker.ui.screens.settingsScreen.SettingsScreenViewModel
+import com.example.appblocker.ui.screens.settingsScreen.SettingsScreenViewModelFactory
 
 val Context.dataStore: DataStore<List<AppBlockSetPreferences>> by dataStore(
     fileName = "appBlockSet.json",
     serializer = AppBlockSetPreferencesSerializer
+)
+val Context.settingsDataStore: DataStore<AppSettingsPreferences> by dataStore(
+    fileName = "settings.json",
+    serializer = AppSettingsPreferencesSerializer
 )
 
 @Composable
@@ -39,8 +46,17 @@ fun AppNavigation(modifier: Modifier = Modifier, appRepository: AppRepository) {
         modifier = modifier
     ) {
         composable("home") {
-            App(onNavigateToManageBlockSets = { navController.navigate("block_set_list") })
+            App(
+                onNavigateToManageBlockSets = { navController.navigate("block_set_list") },
+                onNavigateToSettings = { navController.navigate("settings") })
         }
+
+        composable("settings") {
+            val viewModel: SettingsScreenViewModel =
+                viewModel(factory = SettingsScreenViewModelFactory(LocalContext.current.settingsDataStore))
+            SettingsScreen(viewModel)
+        }
+
         composable("block_set_list") {
             val viewModel: BlockSetListScreenViewModel =
                 viewModel(factory = BlockSetListScreenViewModelFactory(LocalContext.current.dataStore))

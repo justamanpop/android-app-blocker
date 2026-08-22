@@ -1,6 +1,5 @@
 package com.example.appblocker.ui.screens.addAppToBlockListScreen
 
-import android.content.pm.PackageManager
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -8,14 +7,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.appblocker.AppBlockItemPreferences
 import com.example.appblocker.AppBlockSetPreferences
 import com.example.appblocker.AppRepository
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
