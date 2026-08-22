@@ -4,7 +4,11 @@ import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.appblocker.AppBlockSetPreferences
 import com.example.appblocker.AppSettingsPreferences
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class SettingsScreenViewModelFactory(
@@ -22,6 +26,14 @@ class SettingsScreenViewModelFactory(
 
 class SettingsScreenViewModel(
     val dataStore: DataStore<AppSettingsPreferences>) : ViewModel() {
+
+    val settingsFlow: StateFlow<AppSettingsPreferences> =
+        dataStore.data
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = AppSettingsPreferences(0,0)
+            )
 
     fun updateSettings(blockListLockDurationAfterAppAdd: Int, blockSetLockDurationAfterBlockSetCreateOrUpdate: Int) {
         viewModelScope.launch {
