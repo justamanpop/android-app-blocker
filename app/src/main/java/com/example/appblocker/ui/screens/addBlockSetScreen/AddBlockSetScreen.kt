@@ -222,10 +222,6 @@ fun AddBlockSetScreen(viewModel: AddBlockSetScreenViewModel, onAddBlockSet: () -
 
                     viewModel.createBlockSet(nameTextFieldValue, activeDays, activeTimeTextFieldValue)
 
-                    scope.launch {
-                        snackbarHostState.currentSnackbarData?.dismiss()
-                        snackbarHostState.showSnackbar(message = "Block set $nameTextFieldValue created!")
-                    }
                     onAddBlockSet()
                 }) {
                 Text("Create block set")

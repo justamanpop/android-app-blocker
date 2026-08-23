@@ -35,6 +35,20 @@ class SettingsScreenViewModel(
                 initialValue = AppSettingsPreferences(0,0)
             )
 
+    fun validateForm(blockSetLockDuration: HoursMinutesDays): SettingsFormValidationResult {
+        val validationResult: SettingsFormValidationResult = SettingsFormValidationResult()
+        if (blockSetLockDuration.days < 0) {
+            validationResult.blockSetDayErrorMessage = "Days cannot be negative"
+        }
+        if (blockSetLockDuration.hours < 0) {
+            validationResult.blockSetDayErrorMessage = "Hours cannot be negative"
+        }
+        if (blockSetLockDuration.minutes < 0) {
+            validationResult.blockSetMinuteErrorMessage = "Minutes cannot be negative"
+        }
+        return validationResult
+    }
+
     fun updateSettings(blockListLockDurationAfterAppAdd: Int, blockSetLockDurationAfterBlockSetCreateOrUpdate: Int) {
         viewModelScope.launch {
             dataStore.updateData { preferences ->
@@ -44,3 +58,9 @@ class SettingsScreenViewModel(
     }
 }
 
+data class HoursMinutesDays(val hours: Int, val minutes: Int, val days: Int)
+data class SettingsFormValidationResult(
+    var blockSetDayErrorMessage: String? = null,
+    var blockSetHourErrorMessage: String? = null,
+    var blockSetMinuteErrorMessage: String? = null,
+)
