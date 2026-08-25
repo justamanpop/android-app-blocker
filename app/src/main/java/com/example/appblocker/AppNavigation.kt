@@ -54,7 +54,7 @@ fun AppNavigation(modifier: Modifier = Modifier, appRepository: AppRepository) {
         composable("settings") {
             val viewModel: SettingsScreenViewModel =
                 viewModel(factory = SettingsScreenViewModelFactory(LocalContext.current.settingsDataStore))
-            SettingsScreen(viewModel)
+            SettingsScreen(viewModel, {navController.navigate("home")})
         }
 
         composable("block_set_list") {

@@ -1,10 +1,10 @@
 package com.example.appblocker.ui.screens.settingsScreen
 
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.appblocker.AppBlockSetPreferences
 import com.example.appblocker.AppSettingsPreferences
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -25,42 +25,85 @@ class SettingsScreenViewModelFactory(
 }
 
 class SettingsScreenViewModel(
-    val dataStore: DataStore<AppSettingsPreferences>) : ViewModel() {
+    val dataStore: DataStore<AppSettingsPreferences>
+) : ViewModel() {
 
     val settingsFlow: StateFlow<AppSettingsPreferences> =
         dataStore.data
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
-                initialValue = AppSettingsPreferences(0,0)
+                initialValue = AppSettingsPreferences(0, 0)
             )
 
-    fun validateForm(blockSetLockDuration: HoursMinutesDays): SettingsFormValidationResult {
-        val validationResult: SettingsFormValidationResult = SettingsFormValidationResult()
-        if (blockSetLockDuration.days < 0) {
-            validationResult.blockSetDayErrorMessage = "Days cannot be negative"
-        }
-        if (blockSetLockDuration.hours < 0) {
-            validationResult.blockSetDayErrorMessage = "Hours cannot be negative"
-        }
-        if (blockSetLockDuration.minutes < 0) {
-            validationResult.blockSetMinuteErrorMessage = "Minutes cannot be negative"
-        }
-        return validationResult
+    fun getBlockSetLockFieldValuesFromStoredSettings(storedSettings: AppSettingsPreferences): HoursMinutesDaysFieldValues {
+        val days =
+            (storedSettings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds / 3600) / 24
+        val hours =
+            (storedSettings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds - days * 24 * 3600) / 3600
+        val minutes =
+            ((storedSettings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds - days * 24 * 3600) - (hours * 3600))/60
+        Log.d("debugSetting", "block set lock: read value from prefs is $storedSettings")
+        Log.d("debugSetting", "block set lock: hours, mins, days read from shared prefs are days: $days | hours: $hours | minutes: $minutes")
+        return HoursMinutesDaysFieldValues(
+            days = days.toString(),
+            hours = hours.toString(),
+            minutes = minutes.toString()
+        )
     }
 
-    fun updateSettings(blockListLockDurationAfterAppAdd: Int, blockSetLockDurationAfterBlockSetCreateOrUpdate: Int) {
+    fun getBlockListLockFieldValuesFromStoredSettings(storedSettings: AppSettingsPreferences): HoursMinutesDaysFieldValues {
+        val days = (storedSettings.appBlockListLockDurationAfterAddToBlockListInSeconds / 3600) / 24
+        val hours =
+            (storedSettings.appBlockListLockDurationAfterAddToBlockListInSeconds - days * 24 * 3600) / 3600
+        val minutes =
+            ((storedSettings.appBlockListLockDurationAfterAddToBlockListInSeconds - days * 24 * 3600) - (hours * 3600))/60
+        Log.d("debugSetting", "blocked app lock: read value from prefs is $storedSettings")
+        Log.d("debugSetting", "blocked app lock: hours, mins, days read from shared prefs are days: $days | hours: $hours | minutes: $minutes")
+        return HoursMinutesDaysFieldValues(
+            days = days.toString(),
+            hours = hours.toString(),
+            minutes = minutes.toString()
+        )
+    }
+
+    fun getDurationFromFieldValues(
+        blockSetLockDaysFieldValue: String,
+        blockSetLockHoursFieldValue: String,
+        blockSetLockMinutesFieldValue: String,
+        blockedAppLockDaysFieldValue: String,
+        blockedAppLockHoursFieldValue: String,
+        blockedAppLockMinutesFieldValue: String,
+    ): BlockDurations {
+        Log.d("debugSetting", "block set lock: days: $blockSetLockDaysFieldValue | hours: $blockSetLockHoursFieldValue | minutes: $blockSetLockMinutesFieldValue")
+        Log.d("debugSetting", "blocked app lock: days: $blockedAppLockDaysFieldValue | hours: $blockedAppLockHoursFieldValue | minutes: $blockedAppLockMinutesFieldValue")
+        return BlockDurations(
+            blockedAppLockDurationAfterAppAddInSeconds = (blockedAppLockDaysFieldValue.toIntOrNull()
+                ?: 0) * 3600 * 24 + (blockedAppLockHoursFieldValue.toIntOrNull()
+                ?: 0) * 3600 + (blockedAppLockMinutesFieldValue.toIntOrNull() ?: 0) * 60,
+            blockSetLockDurationAfterBlockSetCreateOrUpdateInSeconds = (blockSetLockDaysFieldValue.toIntOrNull()
+                ?: 0) * 3600 * 24 + (blockSetLockHoursFieldValue.toIntOrNull()
+                ?: 0) * 3600 + (blockSetLockMinutesFieldValue.toIntOrNull() ?: 0) * 60
+        )
+    }
+
+    fun updateSettings(
+        blockDurations: BlockDurations
+    ) {
         viewModelScope.launch {
             dataStore.updateData { preferences ->
-                preferences.copy(appBlockListLockDurationAfterAddToBlockListInSeconds = blockListLockDurationAfterAppAdd, appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds = blockSetLockDurationAfterBlockSetCreateOrUpdate)
+                preferences.copy(
+                    appBlockListLockDurationAfterAddToBlockListInSeconds = blockDurations.blockedAppLockDurationAfterAppAddInSeconds,
+                    appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds = blockDurations.blockSetLockDurationAfterBlockSetCreateOrUpdateInSeconds
+                )
             }
         }
     }
 }
 
-data class HoursMinutesDays(val hours: Int, val minutes: Int, val days: Int)
-data class SettingsFormValidationResult(
-    var blockSetDayErrorMessage: String? = null,
-    var blockSetHourErrorMessage: String? = null,
-    var blockSetMinuteErrorMessage: String? = null,
+data class HoursMinutesDaysFieldValues(val minutes: String, val hours: String, val days: String)
+
+data class BlockDurations(
+    val blockedAppLockDurationAfterAppAddInSeconds: Int,
+    val blockSetLockDurationAfterBlockSetCreateOrUpdateInSeconds: Int
 )
