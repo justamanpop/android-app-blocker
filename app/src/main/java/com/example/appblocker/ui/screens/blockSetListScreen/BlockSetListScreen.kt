@@ -16,14 +16,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
@@ -53,15 +51,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.appblocker.AppBlockSetPreferences
+import com.example.appblocker.AppSettingsPreferences
 import com.example.appblocker.add
 import com.example.appblocker.delete
-import com.example.appblocker.info_i
 import com.example.appblocker.lock_clock
-import com.example.appblocker.ui.screens.blockSetDetails.LOCK_DURATION_OF_BLOCK_SET_AFTER_EDIT
 import com.example.appblocker.ui.shared.DaysOfWeekSelect
 import com.example.appblocker.ui.shared.DeleteConfirmationModal
 import com.example.appblocker.ui.theme.Error
-import com.example.appblocker.ui.theme.Surface
 import com.example.appblocker.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
@@ -118,22 +114,27 @@ fun BlockSetListScreen(
                     color = TextSecondary,
                     modifier = Modifier.padding(16.dp)
                 )
-            }
-
-            val now = Clock.System.now()
-            blockSets.forEach { blockSet ->
-                key(blockSet.id) {
-                    val isLocked =
-                        (now.epochSeconds - blockSet.lastUpdatedAt.epochSeconds) < LOCK_DURATION_OF_BLOCK_SET_AFTER_EDIT
-                    BlockSetListItem(
-                        blockSet,
-                        isLocked,
-                        { navigateToBlockSetDetails(blockSet.id) },
-                        { blockSetToDelete = blockSet },
-                    )
+            } else {
+                val settings by viewModel.settingsFlow.collectAsStateWithLifecycle(
+                    initialValue = AppSettingsPreferences(0,0)
+                )
+                val now = Clock.System.now()
+                blockSets.forEach { blockSet ->
+                    key(blockSet.id) {
+                        val isLocked =
+                            (now.epochSeconds - blockSet.lastUpdatedAt.epochSeconds) < settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds
+                        BlockSetListItem(
+                            blockSet,
+                            isLocked,
+                            settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds,
+                            { navigateToBlockSetDetails(blockSet.id) },
+                            { blockSetToDelete = blockSet },
+                        )
+                    }
                 }
             }
         }
+
         val blockSetShadow = blockSetToDelete
         if (blockSetShadow != null) {
             DeleteConfirmationModal(blockSetShadow.name, {
@@ -156,6 +157,7 @@ fun BlockSetListScreen(
 fun BlockSetListItem(
     blockSet: AppBlockSetPreferences,
     isLocked: Boolean,
+    lockDurationInSeconds: Int,
     onClick: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
@@ -230,7 +232,7 @@ fun BlockSetListItem(
                         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
                             TooltipAnchorPosition.Below
                         ),
-                        tooltip = { PlainTooltip() { Text("Block set cannot be deleted for $LOCK_DURATION_OF_BLOCK_SET_AFTER_EDIT seconds after creation or updating") } },
+                        tooltip = { PlainTooltip() { Text("Block set cannot be deleted for $lockDurationInSeconds seconds after creation or updating") } },
                         state = tooltipState,
                     ) {}
                     Icon(

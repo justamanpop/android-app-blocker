@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.appblocker.AppBlockItemPreferences
+import com.example.appblocker.AppSettingsPreferences
 import com.example.appblocker.delete
 import com.example.appblocker.info_i
 import com.example.appblocker.lock_clock
@@ -76,15 +77,6 @@ import kotlin.collections.listOf
 import kotlin.time.Clock
 import kotlin.time.Clock.System.now
 import kotlin.time.ExperimentalTime
-
-/**
- * Number of seconds after an app is added to the block list that user cannot remove it again.
- * Meant to be large so that user cannot after adding remove an app any time soon in a
- * moment of weakness
- */
-//const val LOCK_DURATION_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS = 60 * 60 * 24 * 7
-const val LOCK_DURATION_OF_BLOCK_LIST_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS = 20
-const val LOCK_DURATION_OF_BLOCK_SET_AFTER_EDIT = 20
 
 @OptIn(ExperimentalTime::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -116,6 +108,10 @@ fun BlockSetDetailsScreen(
 
         val localFocusManager = LocalFocusManager.current
 
+        val settings by viewModel.settingsFlow.collectAsStateWithLifecycle(
+            initialValue = AppSettingsPreferences(0,0)
+        )
+
         Scaffold(
             snackbarHost = {
                 SnackbarHost(hostState = snackbarHostState) { data ->
@@ -140,7 +136,7 @@ fun BlockSetDetailsScreen(
                 )
                 Spacer(Modifier.height(8.dp))
                 val isLocked =
-                    (now().epochSeconds - currBlockSet.lastUpdatedAt.epochSeconds) < LOCK_DURATION_OF_BLOCK_SET_AFTER_EDIT
+                    (now().epochSeconds - currBlockSet.lastUpdatedAt.epochSeconds) < settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds
                 OutlinedTextField(
                     nameTextFieldValue,
                     {
@@ -252,7 +248,7 @@ fun BlockSetDetailsScreen(
                             positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
                                 TooltipAnchorPosition.Below
                             ),
-                            tooltip = { PlainTooltip() { Text("Block set cannot be edited for $LOCK_DURATION_OF_BLOCK_SET_AFTER_EDIT seconds after creation or updating") } },
+                            tooltip = { PlainTooltip() { Text("Block set cannot be edited for ${settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds} seconds after creation or updating") } },
                             state = tooltipState,
                         ) {}
                         Icon(
@@ -305,9 +301,9 @@ fun BlockSetDetailsScreen(
                         items(currBlockSet.blockList.size) { idx ->
                             val app = currBlockSet.blockList[idx]
                             val isLocked =
-                                (now().epochSeconds - app.addedAt.epochSeconds) < LOCK_DURATION_OF_BLOCK_LIST_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS
+                                (now().epochSeconds - app.addedAt.epochSeconds) < settings.appBlockListLockDurationAfterAddToBlockListInSeconds
                             key(app.appPackageName) {
-                                BlockedAppItem(app, isLocked, {
+                                BlockedAppItem(app, isLocked, settings.appBlockListLockDurationAfterAddToBlockListInSeconds, {
                                     viewModel.removePackageFromBlockList(app.appPackageName)
                                     scope.launch {
                                         snackbarHostState.currentSnackbarData?.dismiss()
@@ -329,8 +325,9 @@ fun BlockSetDetailsScreen(
 fun BlockedAppItem(
     blockedApp: AppBlockItemPreferences,
     isLocked: Boolean,
+    blockDurationInSeconds: Int,
     onDelete: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val progress = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
@@ -371,7 +368,7 @@ fun BlockedAppItem(
                         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
                             TooltipAnchorPosition.Below
                         ),
-                        tooltip = { PlainTooltip() { Text("Blocked app cannot be removed from list for $LOCK_DURATION_OF_BLOCK_LIST_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS seconds after being added") } },
+                        tooltip = { PlainTooltip() { Text("Blocked app cannot be removed from list for $blockDurationInSeconds seconds after being added") } },
                         state = tooltipState,
                     ) {}
                     Icon(

@@ -58,8 +58,6 @@ class SettingsScreenViewModel(
             (storedSettings.appBlockListLockDurationAfterAddToBlockListInSeconds - days * 24 * 3600) / 3600
         val minutes =
             ((storedSettings.appBlockListLockDurationAfterAddToBlockListInSeconds - days * 24 * 3600) - (hours * 3600))/60
-        Log.d("debugSetting", "blocked app lock: read value from prefs is $storedSettings")
-        Log.d("debugSetting", "blocked app lock: hours, mins, days read from shared prefs are days: $days | hours: $hours | minutes: $minutes")
         return HoursMinutesDaysFieldValues(
             days = days.toString(),
             hours = hours.toString(),
@@ -75,8 +73,6 @@ class SettingsScreenViewModel(
         blockedAppLockHoursFieldValue: String,
         blockedAppLockMinutesFieldValue: String,
     ): BlockDurations {
-        Log.d("debugSetting", "block set lock: days: $blockSetLockDaysFieldValue | hours: $blockSetLockHoursFieldValue | minutes: $blockSetLockMinutesFieldValue")
-        Log.d("debugSetting", "blocked app lock: days: $blockedAppLockDaysFieldValue | hours: $blockedAppLockHoursFieldValue | minutes: $blockedAppLockMinutesFieldValue")
         return BlockDurations(
             blockedAppLockDurationAfterAppAddInSeconds = (blockedAppLockDaysFieldValue.toIntOrNull()
                 ?: 0) * 3600 * 24 + (blockedAppLockHoursFieldValue.toIntOrNull()

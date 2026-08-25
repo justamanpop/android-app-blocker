@@ -5,23 +5,24 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.appblocker.AppBlockSetPreferences
+import com.example.appblocker.AppSettingsPreferences
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class BlockSetListScreenViewModelFactory(private val dataStore: DataStore<List<AppBlockSetPreferences>>) :
+class BlockSetListScreenViewModelFactory(private val dataStore: DataStore<List<AppBlockSetPreferences>>, private val settingsDataStore: DataStore<AppSettingsPreferences>) :
     ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(BlockSetListScreenViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return BlockSetListScreenViewModel(dataStore) as T
+            return BlockSetListScreenViewModel(dataStore, settingsDataStore) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
 
-class BlockSetListScreenViewModel(val dataStore: DataStore<List<AppBlockSetPreferences>>) :
+class BlockSetListScreenViewModel(val dataStore: DataStore<List<AppBlockSetPreferences>>, val settingsDataStore: DataStore<AppSettingsPreferences>) :
     ViewModel() {
     val blockSetsFlow: StateFlow<List<AppBlockSetPreferences>> =
         dataStore.data
@@ -29,6 +30,14 @@ class BlockSetListScreenViewModel(val dataStore: DataStore<List<AppBlockSetPrefe
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
                 initialValue = listOf()
+            )
+
+    val settingsFlow: StateFlow<AppSettingsPreferences> =
+        settingsDataStore.data
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = AppSettingsPreferences(0, 0)
             )
 
     fun deleteBlockSet(id: Int) {
