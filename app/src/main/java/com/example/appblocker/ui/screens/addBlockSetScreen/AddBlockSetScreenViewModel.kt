@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DayOfWeek
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 class AddBlockSetScreenViewModelFactory(private val dataStore: DataStore<List<AppBlockSetPreferences>>) :
     ViewModelProvider.Factory {
@@ -46,6 +48,7 @@ class AddBlockSetScreenViewModel(val dataStore: DataStore<List<AppBlockSetPrefer
         return CreateBlockSetFormValidationResult(nameErrorMessage, activeTimeErrorMessage)
     }
 
+    @OptIn(ExperimentalTime::class)
     fun createBlockSet(
         blockSetName: String,
         activeDays: Map<DayOfWeek, Boolean>,
@@ -60,7 +63,8 @@ class AddBlockSetScreenViewModel(val dataStore: DataStore<List<AppBlockSetPrefer
                     blockSetName,
                     listOf(),
                     activeDays,
-                    orderedActiveTime
+                    orderedActiveTime,
+                    Clock.System.now()
                 )
             }
         }

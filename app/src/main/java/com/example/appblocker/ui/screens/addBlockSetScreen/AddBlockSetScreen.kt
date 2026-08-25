@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.appblocker.info_i
+import com.example.appblocker.ui.shared.SecondaryButton
 import com.example.appblocker.ui.shared.DaysOfWeekSelect
 import com.example.appblocker.ui.theme.Border
 import com.example.appblocker.ui.theme.OnPrimary
@@ -62,7 +63,7 @@ import kotlinx.datetime.DayOfWeek
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddBlockSetScreen(viewModel: AddBlockSetScreenViewModel, onAddBlockSet: () -> Unit) {
+fun AddBlockSetScreen(viewModel: AddBlockSetScreenViewModel, onAddBlockSet: () -> Unit, onGoBack: () -> Unit) {
     val blockSets by viewModel.blockSetsFlow.collectAsStateWithLifecycle(
         initialValue = listOf()
     )
@@ -206,29 +207,43 @@ fun AddBlockSetScreen(viewModel: AddBlockSetScreenViewModel, onAddBlockSet: () -
             }
 
             Spacer(Modifier.height(16.dp))
-            Button(
-                onClick = {
+            Row {
+                Button(
+                    onClick = {
+                        keyboardController?.hide()
+
+                        val validationResult = viewModel.validateForm(
+                            nameTextFieldValue,
+                            activeTimeTextFieldValue,
+                            blockSets
+                        )
+                        if (validationResult.nameErrorMessage != null) {
+                            nameTextFieldError = validationResult.nameErrorMessage
+                            return@Button
+                        }
+                        if (validationResult.activeTimeErrorMessage != null) {
+                            activeTimeTextFieldError = validationResult.activeTimeErrorMessage
+                            return@Button
+                        }
+
+                        viewModel.createBlockSet(
+                            nameTextFieldValue,
+                            activeDays,
+                            activeTimeTextFieldValue
+                        )
+
+                        onAddBlockSet()
+                    }) {
+                    Text("Create block set")
+                }
+                Spacer(Modifier.width(8.dp))
+                SecondaryButton(onClick = {
+                    onGoBack()
                     keyboardController?.hide()
 
-                    val validationResult = viewModel.validateForm(nameTextFieldValue, activeTimeTextFieldValue, blockSets)
-                    if (validationResult.nameErrorMessage != null) {
-                        nameTextFieldError = validationResult.nameErrorMessage
-                        return@Button
-                    }
-                    if (validationResult.activeTimeErrorMessage != null) {
-                        activeTimeTextFieldError = validationResult.activeTimeErrorMessage
-                        return@Button
-                    }
-
-                    viewModel.createBlockSet(nameTextFieldValue, activeDays, activeTimeTextFieldValue)
-
-                    scope.launch {
-                        snackbarHostState.currentSnackbarData?.dismiss()
-                        snackbarHostState.showSnackbar(message = "Block set $nameTextFieldValue created!")
-                    }
-                    onAddBlockSet()
                 }) {
-                Text("Create block set")
+                    Text("Go back")
+                }
             }
         }
     }

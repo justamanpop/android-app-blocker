@@ -20,11 +20,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -64,9 +62,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.appblocker.AppBlockItemPreferences
+import com.example.appblocker.AppSettingsPreferences
 import com.example.appblocker.delete
 import com.example.appblocker.info_i
 import com.example.appblocker.lock_clock
+import com.example.appblocker.ui.shared.SecondaryButton
 import com.example.appblocker.ui.shared.DaysOfWeekSelect
 import com.example.appblocker.ui.theme.Border
 import com.example.appblocker.ui.theme.Error
@@ -76,22 +76,16 @@ import com.example.appblocker.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
 import kotlin.collections.listOf
 import kotlin.time.Clock
+import kotlin.time.Clock.System.now
 import kotlin.time.ExperimentalTime
-
-/**
- * Number of seconds after an app is added to the block list that user cannot remove it again.
- * Meant to be large so that user cannot after adding remove an app any time soon in a
- * moment of weakness
- */
-//const val LOCK_DURATION_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS = 60 * 60 * 24 * 7
-const val LOCK_DURATION_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS = 20
 
 @OptIn(ExperimentalTime::class, ExperimentalMaterial3Api::class)
 @Composable
 fun BlockSetDetailsScreen(
     viewModel: BlockSetDetailsScreenViewModel,
     id: Int,
-    onNavigateToAddApp: (id: Int) -> Unit
+    onNavigateToAddApp: (id: Int) -> Unit,
+    onGoBack: () -> Unit,
 ) {
     val blockSets by viewModel.blockSetFlow.collectAsStateWithLifecycle(
         initialValue = listOf()
@@ -116,6 +110,10 @@ fun BlockSetDetailsScreen(
 
         val localFocusManager = LocalFocusManager.current
 
+        val settings by viewModel.settingsFlow.collectAsStateWithLifecycle(
+            initialValue = AppSettingsPreferences(0,0)
+        )
+
         Scaffold(
             snackbarHost = {
                 SnackbarHost(hostState = snackbarHostState) { data ->
@@ -133,6 +131,14 @@ fun BlockSetDetailsScreen(
                     .padding(scaffoldPadding)
                     .padding(16.dp)
             ) {
+                Text(
+                    text = "Block Set ${currBlockSet.name}",
+                    fontSize = 32.sp,
+                    lineHeight = 32.sp,
+                )
+                Spacer(Modifier.height(8.dp))
+                val isLocked =
+                    (now().epochSeconds - currBlockSet.lastUpdatedAt.epochSeconds) < settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds
                 OutlinedTextField(
                     nameTextFieldValue,
                     {
@@ -146,6 +152,7 @@ fun BlockSetDetailsScreen(
                     supportingText = {
                         Text(nameTextFieldError ?: "")
                     },
+                    readOnly = isLocked
                 )
 
                 Spacer(Modifier.height(8.dp))
@@ -154,7 +161,7 @@ fun BlockSetDetailsScreen(
                 Spacer(Modifier.height(4.dp))
                 DaysOfWeekSelect(
                     daysState = activeDays,
-                    readonly = false,
+                    readonly = isLocked,
                     modifier = Modifier
                         .border(1.dp, Border, shape = RoundedCornerShape(8.dp))
                         .padding(8.dp),
@@ -199,39 +206,66 @@ fun BlockSetDetailsScreen(
                     supportingText = {
                         Text(activeTimeTextFieldError ?: "")
                     },
+                    readOnly = isLocked
                 )
                 Spacer(Modifier.height(4.dp))
 
-                Button(
-                    onClick = {
-                        keyboardController?.hide()
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Button(
+                        enabled = !isLocked,
+                        onClick = {
+                            keyboardController?.hide()
 
-                        val validationResult = viewModel.validateForm(
-                            nameTextFieldValue,
-                            activeTimeTextFieldValue,
-                            blockSets
+                            val validationResult = viewModel.validateForm(
+                                nameTextFieldValue,
+                                activeTimeTextFieldValue,
+                                blockSets
+                            )
+                            if (validationResult.nameErrorMessage != null) {
+                                nameTextFieldError = validationResult.nameErrorMessage
+                                return@Button
+                            }
+                            if (validationResult.activeTimeErrorMessage != null) {
+                                activeTimeTextFieldError = validationResult.activeTimeErrorMessage
+                                return@Button
+                            }
+
+                            viewModel.updateBlockSet(
+                                nameTextFieldValue,
+                                activeDays,
+                                activeTimeTextFieldValue
+                            )
+
+                            scope.launch {
+                                snackbarHostState.currentSnackbarData?.dismiss()
+                                snackbarHostState.showSnackbar(message = "Block set updated!")
+                            }
+                        }) {
+                        Text("Update")
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    SecondaryButton(onClick = onGoBack) {
+                        Text("Go back")
+                    }
+                    if (isLocked) {
+                        Spacer(Modifier.width(24.dp))
+                        val tooltipState = rememberTooltipState(isPersistent = true)
+                        TooltipBox(
+                            positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                                TooltipAnchorPosition.Below
+                            ),
+                            tooltip = { PlainTooltip() { Text("Block set cannot be edited for ${settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds} seconds after creation or updating") } },
+                            state = tooltipState,
+                        ) {}
+                        Icon(
+                            lock_clock,
+                            "cannot remove from blocklist before waiting for min duration",
+                            modifier = Modifier
+                                .size(36.dp)
+                                .align(Alignment.CenterVertically)
+                                .clickable(onClick = { scope.launch { tooltipState.show() } })
                         )
-                        if (validationResult.nameErrorMessage != null) {
-                            nameTextFieldError = validationResult.nameErrorMessage
-                            return@Button
-                        }
-                        if (validationResult.activeTimeErrorMessage != null) {
-                            activeTimeTextFieldError = validationResult.activeTimeErrorMessage
-                            return@Button
-                        }
-
-                        viewModel.updateBlockSet(
-                            nameTextFieldValue,
-                            activeDays,
-                            activeTimeTextFieldValue
-                        )
-
-                        scope.launch {
-                            snackbarHostState.currentSnackbarData?.dismiss()
-                            snackbarHostState.showSnackbar(message = "Block set updated!")
-                        }
-                    }) {
-                    Text("Update")
+                    }
                 }
 
                 Spacer(Modifier.height(8.dp))
@@ -258,21 +292,24 @@ fun BlockSetDetailsScreen(
                 }
                 if (currBlockSet.blockList.isEmpty()) {
                     Text(
-                        "Block list empty. Tap + to add",
+                        "Block list empty.",
                         fontSize = 24.sp,
                         color = TextSecondary,
                         modifier = Modifier.padding(16.dp)
                     )
                 } else {
-                    val now = Clock.System.now()
-                    LazyColumn(modifier = Modifier.fillMaxSize().padding(bottom = 4.dp)) {
-                        items(currBlockSet.blockList.size) {
-                           idx ->
+                    Spacer(Modifier.padding(top = 16.dp))
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(bottom = 4.dp)
+                    ) {
+                        items(currBlockSet.blockList.size) { idx ->
                             val app = currBlockSet.blockList[idx]
                             val isLocked =
-                                (now.epochSeconds - app.addedAt.epochSeconds) < LOCK_DURATION_AFTER_ADD_TO_BLOCK_LIST_IN_SECONDS
+                                (now().epochSeconds - app.addedAt.epochSeconds) < settings.appBlockListLockDurationAfterAddToBlockListInSeconds
                             key(app.appPackageName) {
-                                BlockedAppItem(app, isLocked, {
+                                BlockedAppItem(app, isLocked, settings.appBlockListLockDurationAfterAddToBlockListInSeconds, {
                                     viewModel.removePackageFromBlockList(app.appPackageName)
                                     scope.launch {
                                         snackbarHostState.currentSnackbarData?.dismiss()
@@ -289,12 +326,14 @@ fun BlockSetDetailsScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BlockedAppItem(
     blockedApp: AppBlockItemPreferences,
     isLocked: Boolean,
+    blockDurationInSeconds: Int,
     onDelete: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val progress = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
@@ -302,7 +341,7 @@ fun BlockedAppItem(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding( bottom = 8.dp, end = 8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Box(
@@ -330,19 +369,23 @@ fun BlockedAppItem(
                 )
                 Spacer(Modifier)
                 if (isLocked) {
-                    IconButton(
-                        {}, enabled = false,
-                        modifier =
-                            Modifier
-                                .padding(end = 8.dp)
-                                .align(Alignment.CenterVertically)
-                                .weight(1f)
-                    ) {
-                        Icon(
-                            lock_clock,
-                            "cannot remove from blocklist before waiting one day",
-                        )
-                    }
+                    val tooltipState = rememberTooltipState(isPersistent = true)
+                    TooltipBox(
+                        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                            TooltipAnchorPosition.Below
+                        ),
+                        tooltip = { PlainTooltip() { Text("Blocked app cannot be removed from list for $blockDurationInSeconds seconds after being added") } },
+                        state = tooltipState,
+                    ) {}
+                    Icon(
+                        lock_clock,
+                        "cannot remove from blocklist before waiting one day",
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .align(Alignment.CenterVertically)
+                            .weight(1f)
+                            .clickable(onClick = { scope.launch { tooltipState.show() } })
+                    )
                 } else {
                     Icon(
                         delete,

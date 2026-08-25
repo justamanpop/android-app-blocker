@@ -13,6 +13,34 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 @Serializable
+data class AppSettingsPreferences @OptIn(ExperimentalTime::class) constructor(
+    val appBlockListLockDurationAfterAddToBlockListInSeconds: Int,
+    val appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds: Int,
+)
+
+object AppSettingsPreferencesSerializer : Serializer<AppSettingsPreferences> {
+    override val defaultValue: AppSettingsPreferences = AppSettingsPreferences(120, 120)
+
+    override suspend fun readFrom(input: InputStream): AppSettingsPreferences {
+        try {
+            return decodeFromString<AppSettingsPreferences>(
+                input.readBytes().decodeToString()
+            )
+        } catch (serialization: SerializationException) {
+            throw CorruptionException("Unable to read App Block List preferences", serialization)
+        }
+    }
+
+    override suspend fun writeTo(
+        t: AppSettingsPreferences,
+        output: OutputStream
+    ) {
+        output.write(encodeToString(t).encodeToByteArray())
+    }
+
+}
+
+@Serializable
 data class AppBlockItemPreferences @OptIn(ExperimentalTime::class) constructor(
     val appName: String,
     val appPackageName: String,
@@ -26,6 +54,7 @@ data class AppBlockSetPreferences @OptIn(ExperimentalTime::class) constructor(
     val blockList: List<AppBlockItemPreferences>,
     val activeDays: Map<DayOfWeek, Boolean>,
     val activeTime: String,
+    val lastUpdatedAt: Instant
 )
 
 

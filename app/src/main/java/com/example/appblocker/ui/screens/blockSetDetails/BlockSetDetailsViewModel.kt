@@ -5,7 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.appblocker.AppBlockSetPreferences
+import com.example.appblocker.AppSettingsPreferences
 import com.example.appblocker.CreateBlockSetFormValidationResult
+import com.example.appblocker.settings
 import com.example.appblocker.validateActiveTime
 import com.example.appblocker.validateBlockSetName
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,16 +15,19 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DayOfWeek
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 class BlockSetDetailsScreenViewModelFactory(
     private val dataStore: DataStore<List<AppBlockSetPreferences>>,
+    private val settingsDataStore: DataStore<AppSettingsPreferences>,
     private val blockSetId: Int
 ) :
     ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(BlockSetDetailsScreenViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return BlockSetDetailsScreenViewModel(dataStore, blockSetId) as T
+            return BlockSetDetailsScreenViewModel(dataStore, settingsDataStore, blockSetId) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
@@ -30,6 +35,7 @@ class BlockSetDetailsScreenViewModelFactory(
 
 class BlockSetDetailsScreenViewModel(
     val dataStore: DataStore<List<AppBlockSetPreferences>>,
+    val settingsDataStore: DataStore<AppSettingsPreferences>,
     val blockSetId: Int
 ) :
     ViewModel() {
@@ -41,6 +47,15 @@ class BlockSetDetailsScreenViewModel(
                 initialValue = listOf()
             )
 
+    val settingsFlow: StateFlow<AppSettingsPreferences> =
+        settingsDataStore.data
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = AppSettingsPreferences(0, 0)
+            )
+
+    @OptIn(ExperimentalTime::class)
     fun removePackageFromBlockList(appPackageName: String) {
         viewModelScope.launch {
             dataStore.updateData { preferences ->
@@ -56,13 +71,14 @@ class BlockSetDetailsScreenViewModel(
         }
     }
 
+    @OptIn(ExperimentalTime::class)
     fun updateBlockSet(name: String, activeDays: Map<DayOfWeek, Boolean>, activeTime: String) {
         viewModelScope.launch {
             dataStore.updateData { preferences ->
                 preferences.map {
                         blockSet ->
                     if (blockSet.id == blockSetId) {
-                        blockSet.copy(name = name, activeDays = activeDays, activeTime = activeTime)
+                        blockSet.copy(name = name, activeDays = activeDays, activeTime = activeTime, lastUpdatedAt = Clock.System.now())
                     } else {
                         blockSet
                     }

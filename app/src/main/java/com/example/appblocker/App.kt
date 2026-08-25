@@ -9,9 +9,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import com.example.appblocker.ui.theme.Card
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import android.Manifest
@@ -44,7 +47,8 @@ import com.example.appblocker.ui.theme.Card
 @Composable
 fun App(
     modifier: Modifier = Modifier,
-    onNavigateToManageBlockSets: () -> Unit
+    onNavigateToManageBlockSets: () -> Unit,
+    onNavigateToSettings: () -> Unit
 ) {
     var permissionCheckCounter by remember { mutableIntStateOf(0) }
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
@@ -94,11 +98,11 @@ fun App(
     }
 
     Column() {
-        if (hasAccessibilityPermission && hasSystemAlertPermission && hasNotificationPermission) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = modifier.padding(16.dp)
-            ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = modifier.padding(16.dp)
+        ) {
+            if (hasAccessibilityPermission && hasSystemAlertPermission && hasNotificationPermission) {
                 Text(
                     "App is working! It will keep running the background, you may close it",
                     fontSize = 16.sp,
@@ -106,14 +110,10 @@ fun App(
                 )
                 Spacer(Modifier.height(24.dp))
                 Button(onClick = onNavigateToManageBlockSets) {
-                    Text("Manage blocked apps")
+                    Text("Manage block sets")
                 }
-            }
-        } else {
-            Column(
-                modifier = modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+                Spacer(Modifier.height(24.dp))
+            } else {
                 Text(
                     "App does not have required permissions to work. Click below to grant",
                     fontSize = 24.sp,
@@ -126,9 +126,13 @@ fun App(
                     Text("Grant permissions")
                 }
             }
-        }
-        Button({onNavigateToManageBlockSets()}) {
-            Text("Temp navigate")
+
+            Spacer(Modifier.height(12.dp))
+            Button(onClick = onNavigateToSettings) {
+                Icon(imageVector = settings, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("Settings")
+            }
         }
     }
 }
