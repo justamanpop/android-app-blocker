@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.appblocker.AppSettingsPreferences
+import com.example.appblocker.ui.shared.SecondaryButton
 import com.example.appblocker.ui.theme.TextPrimary
 import com.example.appblocker.ui.theme.TextSecondary
 import com.example.appblocker.ui.theme.Typography
@@ -261,7 +262,7 @@ fun SettingsScreen(viewModel: SettingsScreenViewModel, onGoBack: () -> Unit) {
                     Text("Save settings")
                 }
                 Spacer(Modifier.width(8.dp))
-                Button(onClick = {
+                SecondaryButton(onClick = {
                     keyboardController?.hide()
                     onGoBack()
                 }) {

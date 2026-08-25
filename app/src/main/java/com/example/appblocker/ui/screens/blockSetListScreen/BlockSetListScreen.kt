@@ -57,6 +57,7 @@ import com.example.appblocker.AppSettingsPreferences
 import com.example.appblocker.add
 import com.example.appblocker.delete
 import com.example.appblocker.lock_clock
+import com.example.appblocker.ui.shared.SecondaryButton
 import com.example.appblocker.ui.shared.DaysOfWeekSelect
 import com.example.appblocker.ui.shared.DeleteConfirmationModal
 import com.example.appblocker.ui.theme.Error
@@ -143,7 +144,7 @@ fun BlockSetListScreen(
                     }
                 }
             }
-            Button(onGoBack) {
+            SecondaryButton(onGoBack) {
                 Text("Go back")
             }
         }

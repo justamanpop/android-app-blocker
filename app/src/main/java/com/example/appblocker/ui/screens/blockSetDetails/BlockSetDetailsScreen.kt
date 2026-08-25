@@ -66,6 +66,7 @@ import com.example.appblocker.AppSettingsPreferences
 import com.example.appblocker.delete
 import com.example.appblocker.info_i
 import com.example.appblocker.lock_clock
+import com.example.appblocker.ui.shared.SecondaryButton
 import com.example.appblocker.ui.shared.DaysOfWeekSelect
 import com.example.appblocker.ui.theme.Border
 import com.example.appblocker.ui.theme.Error
@@ -243,7 +244,7 @@ fun BlockSetDetailsScreen(
                         Text("Update")
                     }
                     Spacer(Modifier.width(8.dp))
-                    Button(onClick = onGoBack) {
+                    SecondaryButton(onClick = onGoBack) {
                         Text("Go back")
                     }
                     if (isLocked) {

@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.appblocker.info_i
+import com.example.appblocker.ui.shared.SecondaryButton
 import com.example.appblocker.ui.shared.DaysOfWeekSelect
 import com.example.appblocker.ui.theme.Border
 import com.example.appblocker.ui.theme.OnPrimary
@@ -236,7 +237,7 @@ fun AddBlockSetScreen(viewModel: AddBlockSetScreenViewModel, onAddBlockSet: () -
                     Text("Create block set")
                 }
                 Spacer(Modifier.width(8.dp))
-                Button(onClick = {
+                SecondaryButton(onClick = {
                     onGoBack()
                     keyboardController?.hide()
 
