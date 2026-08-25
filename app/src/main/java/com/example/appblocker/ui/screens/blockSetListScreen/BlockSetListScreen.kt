@@ -11,12 +11,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -68,7 +70,8 @@ import kotlin.time.ExperimentalTime
 fun BlockSetListScreen(
     viewModel: BlockSetListScreenViewModel,
     navigateToAddBlockSet: () -> Unit,
-    navigateToBlockSetDetails: (Int) -> Unit
+    navigateToBlockSetDetails: (Int) -> Unit,
+    onGoBack: () -> Unit,
 ) {
     val blockSets by viewModel.blockSetsFlow.collectAsStateWithLifecycle(
         initialValue = listOf()
@@ -98,7 +101,7 @@ fun BlockSetListScreen(
             modifier = Modifier
                 .padding(scaffoldPadding)
                 .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState())
+                .fillMaxHeight()
         ) {
             Text(
                 "Block sets",
@@ -107,31 +110,41 @@ fun BlockSetListScreen(
                 modifier = Modifier.padding(16.dp)
             )
 
-            if (blockSets.isEmpty()) {
-                Text(
-                    "No block sets exist. Tap + to create",
-                    fontSize = 16.sp,
-                    color = TextSecondary,
-                    modifier = Modifier.padding(16.dp)
-                )
-            } else {
-                val settings by viewModel.settingsFlow.collectAsStateWithLifecycle(
-                    initialValue = AppSettingsPreferences(0,0)
-                )
-                val now = Clock.System.now()
-                blockSets.forEach { blockSet ->
-                    key(blockSet.id) {
-                        val isLocked =
-                            (now.epochSeconds - blockSet.lastUpdatedAt.epochSeconds) < settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds
-                        BlockSetListItem(
-                            blockSet,
-                            isLocked,
-                            settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds,
-                            { navigateToBlockSetDetails(blockSet.id) },
-                            { blockSetToDelete = blockSet },
-                        )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                if (blockSets.isEmpty()) {
+                    Text(
+                        "No block sets exist. Tap + to create",
+                        fontSize = 16.sp,
+                        color = TextSecondary,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                } else {
+                    val settings by viewModel.settingsFlow.collectAsStateWithLifecycle(
+                        initialValue = AppSettingsPreferences(0, 0)
+                    )
+                    val now = Clock.System.now()
+                    blockSets.forEach { blockSet ->
+                        key(blockSet.id) {
+                            val isLocked =
+                                (now.epochSeconds - blockSet.lastUpdatedAt.epochSeconds) < settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds
+                            BlockSetListItem(
+                                blockSet,
+                                isLocked,
+                                settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds,
+                                { navigateToBlockSetDetails(blockSet.id) },
+                                { blockSetToDelete = blockSet },
+                            )
+                        }
                     }
                 }
+            }
+            Button(onGoBack) {
+                Text("Go back")
             }
         }
 

@@ -54,16 +54,23 @@ fun AppNavigation(modifier: Modifier = Modifier, appRepository: AppRepository) {
         composable("settings") {
             val viewModel: SettingsScreenViewModel =
                 viewModel(factory = SettingsScreenViewModelFactory(LocalContext.current.settingsDataStore))
-            SettingsScreen(viewModel, {navController.navigate("home")})
+            SettingsScreen(viewModel, { navController.navigate("home") })
         }
 
         composable("block_set_list") {
             val viewModel: BlockSetListScreenViewModel =
-                viewModel(factory = BlockSetListScreenViewModelFactory(LocalContext.current.dataStore, LocalContext.current.settingsDataStore))
+                viewModel(
+                    factory = BlockSetListScreenViewModelFactory(
+                        LocalContext.current.dataStore,
+                        LocalContext.current.settingsDataStore
+                    )
+                )
             BlockSetListScreen(
                 viewModel,
                 { navController.navigate("add_block_set") },
-                { id -> navController.navigate("block_set_details/$id") })
+                { id -> navController.navigate("block_set_details/$id") },
+                { navController.navigate("home") }
+            )
         }
         composable("add_block_set") {
             val viewModel: AddBlockSetScreenViewModel =
