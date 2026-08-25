@@ -72,12 +72,15 @@ fun AppNavigation(modifier: Modifier = Modifier, appRepository: AppRepository) {
                 { navController.navigate("home") }
             )
         }
+
         composable("add_block_set") {
             val viewModel: AddBlockSetScreenViewModel =
                 viewModel(factory = AddBlockSetScreenViewModelFactory(LocalContext.current.dataStore))
             AddBlockSetScreen(
                 viewModel,
-                { navController.navigate("block_set_list") })
+                { navController.navigate("block_set_list") },
+                { navController.navigate("block_set_list") }
+            )
         }
 
         composable(
@@ -95,7 +98,9 @@ fun AppNavigation(modifier: Modifier = Modifier, appRepository: AppRepository) {
             BlockSetDetailsScreen(
                 viewModel,
                 id,
-                { id -> navController.navigate("add_to_blocklist/$id") })
+                { id -> navController.navigate("add_to_blocklist/$id") },
+                {navController.navigate("block_set_list")}
+            )
         }
 
 

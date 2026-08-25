@@ -62,7 +62,7 @@ import kotlinx.datetime.DayOfWeek
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddBlockSetScreen(viewModel: AddBlockSetScreenViewModel, onAddBlockSet: () -> Unit) {
+fun AddBlockSetScreen(viewModel: AddBlockSetScreenViewModel, onAddBlockSet: () -> Unit, onGoBack: () -> Unit) {
     val blockSets by viewModel.blockSetsFlow.collectAsStateWithLifecycle(
         initialValue = listOf()
     )
@@ -206,25 +206,43 @@ fun AddBlockSetScreen(viewModel: AddBlockSetScreenViewModel, onAddBlockSet: () -
             }
 
             Spacer(Modifier.height(16.dp))
-            Button(
-                onClick = {
+            Row {
+                Button(
+                    onClick = {
+                        keyboardController?.hide()
+
+                        val validationResult = viewModel.validateForm(
+                            nameTextFieldValue,
+                            activeTimeTextFieldValue,
+                            blockSets
+                        )
+                        if (validationResult.nameErrorMessage != null) {
+                            nameTextFieldError = validationResult.nameErrorMessage
+                            return@Button
+                        }
+                        if (validationResult.activeTimeErrorMessage != null) {
+                            activeTimeTextFieldError = validationResult.activeTimeErrorMessage
+                            return@Button
+                        }
+
+                        viewModel.createBlockSet(
+                            nameTextFieldValue,
+                            activeDays,
+                            activeTimeTextFieldValue
+                        )
+
+                        onAddBlockSet()
+                    }) {
+                    Text("Create block set")
+                }
+                Spacer(Modifier.width(8.dp))
+                Button(onClick = {
+                    onGoBack()
                     keyboardController?.hide()
 
-                    val validationResult = viewModel.validateForm(nameTextFieldValue, activeTimeTextFieldValue, blockSets)
-                    if (validationResult.nameErrorMessage != null) {
-                        nameTextFieldError = validationResult.nameErrorMessage
-                        return@Button
-                    }
-                    if (validationResult.activeTimeErrorMessage != null) {
-                        activeTimeTextFieldError = validationResult.activeTimeErrorMessage
-                        return@Button
-                    }
-
-                    viewModel.createBlockSet(nameTextFieldValue, activeDays, activeTimeTextFieldValue)
-
-                    onAddBlockSet()
                 }) {
-                Text("Create block set")
+                    Text("Go back")
+                }
             }
         }
     }

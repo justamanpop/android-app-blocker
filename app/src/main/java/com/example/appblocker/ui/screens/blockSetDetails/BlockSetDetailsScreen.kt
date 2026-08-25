@@ -83,7 +83,8 @@ import kotlin.time.ExperimentalTime
 fun BlockSetDetailsScreen(
     viewModel: BlockSetDetailsScreenViewModel,
     id: Int,
-    onNavigateToAddApp: (id: Int) -> Unit
+    onNavigateToAddApp: (id: Int) -> Unit,
+    onGoBack: () -> Unit,
 ) {
     val blockSets by viewModel.blockSetFlow.collectAsStateWithLifecycle(
         initialValue = listOf()
@@ -240,6 +241,10 @@ fun BlockSetDetailsScreen(
                             }
                         }) {
                         Text("Update")
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    Button(onClick = onGoBack) {
+                        Text("Go back")
                     }
                     if (isLocked) {
                         Spacer(Modifier.width(24.dp))

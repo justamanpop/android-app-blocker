@@ -261,7 +261,10 @@ fun SettingsScreen(viewModel: SettingsScreenViewModel, onGoBack: () -> Unit) {
                     Text("Save settings")
                 }
                 Spacer(Modifier.width(8.dp))
-                Button(onClick = onGoBack) {
+                Button(onClick = {
+                    keyboardController?.hide()
+                    onGoBack()
+                }) {
                     Text("Go back")
                 }
             }
