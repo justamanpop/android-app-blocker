@@ -9,6 +9,7 @@ import kotlinx.serialization.json.Json.Default.decodeFromString
 import kotlinx.serialization.json.Json.Default.encodeToString
 import java.io.InputStream
 import java.io.OutputStream
+import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
@@ -16,10 +17,13 @@ import kotlin.time.Instant
 data class AppSettingsPreferences @OptIn(ExperimentalTime::class) constructor(
     val appBlockListLockDurationAfterAddToBlockListInSeconds: Int,
     val appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds: Int,
+    val settingsLockDurationAfterEdit: Int,
+    val lastUpdatedAt: Instant,
 )
 
 object AppSettingsPreferencesSerializer : Serializer<AppSettingsPreferences> {
-    override val defaultValue: AppSettingsPreferences = AppSettingsPreferences(120, 120)
+    @OptIn(ExperimentalTime::class)
+    override val defaultValue: AppSettingsPreferences = AppSettingsPreferences(0, 0, 0, Clock.System.now())
 
     override suspend fun readFrom(input: InputStream): AppSettingsPreferences {
         try {

@@ -1,0 +1,17 @@
+package com.example.appblocker.ui.shared
+
+import com.example.appblocker.ui.screens.settingsScreen.HoursMinutesDaysFieldValues
+
+fun formatSeconds(seconds: Int): String {
+    val hoursMinutesDays = HoursMinutesDaysFieldValues.fromSeconds(seconds)
+    val formattedString = buildString {
+        if (hoursMinutesDays.days.toInt() != 0) {
+            append("${hoursMinutesDays.days} days")
+        }
+        if (hoursMinutesDays.hours.toInt() != 0) {
+            append(" ${hoursMinutesDays.hours} hours")
+        }
+        append(" ${hoursMinutesDays.minutes} minutes")
+    }
+    return formattedString.trim()
+}

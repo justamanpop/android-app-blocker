@@ -2,6 +2,8 @@ package com.example.appblocker
 
 import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.datastore.core.DataStore
@@ -27,6 +29,7 @@ import com.example.appblocker.ui.screens.blockSetListScreen.BlockSetListScreenVi
 import com.example.appblocker.ui.screens.settingsScreen.SettingsScreen
 import com.example.appblocker.ui.screens.settingsScreen.SettingsScreenViewModel
 import com.example.appblocker.ui.screens.settingsScreen.SettingsScreenViewModelFactory
+import kotlinx.coroutines.launch
 
 val Context.dataStore: DataStore<List<AppBlockSetPreferences>> by dataStore(
     fileName = "appBlockSet.json",

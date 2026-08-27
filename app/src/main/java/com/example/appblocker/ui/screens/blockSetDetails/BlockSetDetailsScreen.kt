@@ -68,6 +68,7 @@ import com.example.appblocker.info_i
 import com.example.appblocker.lock_clock
 import com.example.appblocker.ui.shared.SecondaryButton
 import com.example.appblocker.ui.shared.DaysOfWeekSelect
+import com.example.appblocker.ui.shared.formatSeconds
 import com.example.appblocker.ui.theme.Border
 import com.example.appblocker.ui.theme.Error
 import com.example.appblocker.ui.theme.OnPrimary
@@ -111,7 +112,7 @@ fun BlockSetDetailsScreen(
         val localFocusManager = LocalFocusManager.current
 
         val settings by viewModel.settingsFlow.collectAsStateWithLifecycle(
-            initialValue = AppSettingsPreferences(0,0)
+            initialValue = AppSettingsPreferences(0,0,0, Clock.System.now())
         )
 
         Scaffold(
@@ -254,7 +255,7 @@ fun BlockSetDetailsScreen(
                             positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
                                 TooltipAnchorPosition.Below
                             ),
-                            tooltip = { PlainTooltip() { Text("Block set cannot be edited for ${settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds} seconds after creation or updating") } },
+                            tooltip = { PlainTooltip() { Text("Block set cannot be edited for ${formatSeconds(settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds)} seconds after creation or updating") } },
                             state = tooltipState,
                         ) {}
                         Icon(
@@ -374,7 +375,7 @@ fun BlockedAppItem(
                         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
                             TooltipAnchorPosition.Below
                         ),
-                        tooltip = { PlainTooltip() { Text("Blocked app cannot be removed from list for $blockDurationInSeconds seconds after being added") } },
+                        tooltip = { PlainTooltip() { Text("Blocked app cannot be removed from list for ${formatSeconds(blockDurationInSeconds)} seconds after being added") } },
                         state = tooltipState,
                     ) {}
                     Icon(

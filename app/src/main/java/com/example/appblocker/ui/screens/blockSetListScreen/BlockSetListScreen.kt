@@ -60,6 +60,7 @@ import com.example.appblocker.lock_clock
 import com.example.appblocker.ui.shared.SecondaryButton
 import com.example.appblocker.ui.shared.DaysOfWeekSelect
 import com.example.appblocker.ui.shared.DeleteConfirmationModal
+import com.example.appblocker.ui.shared.formatSeconds
 import com.example.appblocker.ui.theme.Error
 import com.example.appblocker.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
@@ -126,7 +127,7 @@ fun BlockSetListScreen(
                     )
                 } else {
                     val settings by viewModel.settingsFlow.collectAsStateWithLifecycle(
-                        initialValue = AppSettingsPreferences(0, 0)
+                        initialValue = AppSettingsPreferences(0, 0,0, Clock.System.now())
                     )
                     val now = Clock.System.now()
                     blockSets.forEach { blockSet ->
@@ -246,7 +247,7 @@ fun BlockSetListItem(
                         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
                             TooltipAnchorPosition.Below
                         ),
-                        tooltip = { PlainTooltip() { Text("Block set cannot be deleted for $lockDurationInSeconds seconds after creation or updating") } },
+                        tooltip = { PlainTooltip() { Text("Block set cannot be deleted for ${formatSeconds(lockDurationInSeconds)} seconds after creation or updating") } },
                         state = tooltipState,
                     ) {}
                     Icon(

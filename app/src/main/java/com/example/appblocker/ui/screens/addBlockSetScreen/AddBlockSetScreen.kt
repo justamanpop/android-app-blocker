@@ -206,6 +206,9 @@ fun AddBlockSetScreen(viewModel: AddBlockSetScreenViewModel, onAddBlockSet: () -
                 }
             }
 
+            Spacer(Modifier.height(8.dp))
+            Text("🛈 apps can be added to the block set after creation")
+
             Spacer(Modifier.height(16.dp))
             Row {
                 Button(
