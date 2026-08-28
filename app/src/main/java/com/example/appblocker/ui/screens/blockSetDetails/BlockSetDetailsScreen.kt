@@ -375,7 +375,7 @@ fun BlockedAppItem(
                         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
                             TooltipAnchorPosition.Below
                         ),
-                        tooltip = { PlainTooltip() { Text("Blocked app cannot be removed from list for ${formatSeconds(blockDurationInSeconds)} seconds after being added") } },
+                        tooltip = { PlainTooltip() { Text("Blocked app cannot be removed from list for ${formatSeconds(blockDurationInSeconds)} after being added") } },
                         state = tooltipState,
                     ) {}
                     Icon(

@@ -58,6 +58,7 @@ import com.example.appblocker.ui.theme.Border
 import com.example.appblocker.ui.theme.OnPrimary
 import com.example.appblocker.ui.theme.Primary
 import com.example.appblocker.ui.theme.Surface
+import com.example.appblocker.ui.theme.Typography
 import kotlinx.coroutines.launch
 import kotlinx.datetime.DayOfWeek
 
@@ -207,7 +208,14 @@ fun AddBlockSetScreen(viewModel: AddBlockSetScreenViewModel, onAddBlockSet: () -
             }
 
             Spacer(Modifier.height(8.dp))
-            Text("🛈 apps can be added to the block set after creation")
+            Row {
+                Icon(info_i, "info icon", tint = Color(0XFF0f64f7), modifier = Modifier.size(12.dp).align(Alignment.CenterVertically))
+                Spacer(Modifier.width(2.dp))
+                Text(
+                    "Apps can be added to the block set after creation",
+                    style = Typography.bodySmall
+                )
+            }
 
             Spacer(Modifier.height(16.dp))
             Row {

@@ -32,7 +32,7 @@ import com.example.appblocker.ui.screens.settingsScreen.SettingsScreenViewModelF
 import kotlinx.coroutines.launch
 
 val Context.dataStore: DataStore<List<AppBlockSetPreferences>> by dataStore(
-    fileName = "appBlockSet.json",
+    fileName = "appBlockSet5.json",
     serializer = AppBlockSetPreferencesSerializer
 )
 val Context.settingsDataStore: DataStore<AppSettingsPreferences> by dataStore(

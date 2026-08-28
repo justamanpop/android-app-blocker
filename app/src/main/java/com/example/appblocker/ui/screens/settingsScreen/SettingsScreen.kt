@@ -384,7 +384,7 @@ fun SettingsScreen(viewModel: SettingsScreenViewModel, onGoBack: () -> Unit) {
                         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
                             TooltipAnchorPosition.Below
                         ),
-                        tooltip = { PlainTooltip() { Text("Settings cannot be updated for ${formatSeconds(settings.settingsLockDurationAfterEdit)} seconds after an edit") } },
+                        tooltip = { PlainTooltip() { Text("Settings cannot be updated for ${formatSeconds(settings.settingsLockDurationAfterEdit)} after an edit") } },
                         state = tooltipState,
                     ) {}
                     Icon(

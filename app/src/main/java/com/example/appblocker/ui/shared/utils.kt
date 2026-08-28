@@ -11,7 +11,9 @@ fun formatSeconds(seconds: Int): String {
         if (hoursMinutesDays.hours.toInt() != 0) {
             append(" ${hoursMinutesDays.hours} hours")
         }
-        append(" ${hoursMinutesDays.minutes} minutes")
+        if (hoursMinutesDays.minutes.toInt() != 0) {
+            append(" ${hoursMinutesDays.minutes} minutes")
+        }
     }
     return formattedString.trim()
 }

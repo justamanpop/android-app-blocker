@@ -247,7 +247,7 @@ fun BlockSetListItem(
                         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
                             TooltipAnchorPosition.Below
                         ),
-                        tooltip = { PlainTooltip() { Text("Block set cannot be deleted for ${formatSeconds(lockDurationInSeconds)} seconds after creation or updating") } },
+                        tooltip = { PlainTooltip() { Text("Block set cannot be deleted for ${formatSeconds(lockDurationInSeconds)} after creation or updating") } },
                         state = tooltipState,
                     ) {}
                     Icon(
