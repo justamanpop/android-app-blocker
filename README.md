@@ -28,7 +28,7 @@ When an app in an active block set is in the foreground, shows an overlay blocki
 
 Meant to stop you from simply disabling a blocked app in a moment of desire/weakness.
 
-<img width="763" height="1600" alt="image" src="https://github.com/user-attachments/assets/be88a618-323b-4a2b-a746-ffc2d80a1cdc" />
+<img width="773" height="1600" alt="image" src="https://github.com/user-attachments/assets/5f3757d0-4b41-43fa-86ff-18390261b1db" />
 <br>
 <br>
 
