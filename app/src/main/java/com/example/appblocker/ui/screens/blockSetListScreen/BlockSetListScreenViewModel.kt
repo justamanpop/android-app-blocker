@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 class BlockSetListScreenViewModelFactory(private val dataStore: DataStore<List<AppBlockSetPreferences>>, private val settingsDataStore: DataStore<AppSettingsPreferences>) :
     ViewModelProvider.Factory {
@@ -22,6 +24,7 @@ class BlockSetListScreenViewModelFactory(private val dataStore: DataStore<List<A
     }
 }
 
+@OptIn(ExperimentalTime::class)
 class BlockSetListScreenViewModel(val dataStore: DataStore<List<AppBlockSetPreferences>>, val settingsDataStore: DataStore<AppSettingsPreferences>) :
     ViewModel() {
     val blockSetsFlow: StateFlow<List<AppBlockSetPreferences>> =
@@ -37,7 +40,7 @@ class BlockSetListScreenViewModel(val dataStore: DataStore<List<AppBlockSetPrefe
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
-                initialValue = AppSettingsPreferences(0, 0)
+                initialValue = AppSettingsPreferences(0, 0,0, Clock.System.now())
             )
 
     fun deleteBlockSet(id: Int) {

@@ -33,6 +33,7 @@ class BlockSetDetailsScreenViewModelFactory(
     }
 }
 
+@OptIn(ExperimentalTime::class)
 class BlockSetDetailsScreenViewModel(
     val dataStore: DataStore<List<AppBlockSetPreferences>>,
     val settingsDataStore: DataStore<AppSettingsPreferences>,
@@ -52,7 +53,7 @@ class BlockSetDetailsScreenViewModel(
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
-                initialValue = AppSettingsPreferences(0, 0)
+                initialValue = AppSettingsPreferences(0, 0,0, Clock.System.now())
             )
 
     @OptIn(ExperimentalTime::class)

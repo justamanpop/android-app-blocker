@@ -23,6 +23,7 @@ import android.os.Build
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -129,9 +130,12 @@ fun App(
 
             Spacer(Modifier.height(12.dp))
             Button(onClick = onNavigateToSettings) {
-                Icon(imageVector = settings, contentDescription = null)
+                Icon(imageVector = settings, contentDescription = "go to settings")
                 Spacer(Modifier.width(8.dp))
                 Text("Settings")
+            }
+            Button(onClick = {onNavigateToManageBlockSets()}){
+                Text("temp")
             }
         }
     }

@@ -21,8 +21,14 @@ When an app in an active block set is in the foreground, shows an overlay blocki
 <br>
 <br>
 
-##### Configure "lock" durations in settings that prevent you from modifying block sets and apps after adding them to a list for a certain period of time. Meant to stop you from simply undoing blocks in a moment of desire/weakness:
-<img width="763" height="1600" alt="image" src="https://github.com/user-attachments/assets/be88a618-323b-4a2b-a746-ffc2d80a1cdc" />
+##### Configure "lock" durations in settings. They prevent you from:
+- modifying block sets right after create/update so that they cannot be inactivated/deleted for a certain duration.
+- removing blocked apps from block sets after adding them for a certain duration.
+- Modifying settings itself to reduce lock durations to zero, and so modify the other settings. 
+
+Meant to stop you from simply disabling a blocked app in a moment of desire/weakness.
+
+<img width="773" height="1600" alt="image" src="https://github.com/user-attachments/assets/5f3757d0-4b41-43fa-86ff-18390261b1db" />
 <br>
 <br>
 
@@ -42,6 +48,4 @@ For accessibility permission, need to go to Settings > Apps > App Blocker > Clic
 then follow instructions in app to grant the permission.
 
 ### Planned Changes
-- Add lock time for updating settings itself
-- Add info somewhere that this app does not allow to undo/change blocked app for x amount of time. Maybe a one time welcome screen or a help button
 - Add tooltips/improve UX for initial grant permissions modal for each permission

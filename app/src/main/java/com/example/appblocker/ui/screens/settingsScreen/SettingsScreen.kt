@@ -1,6 +1,7 @@
 package com.example.appblocker.ui.screens.settingsScreen
 
 import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,12 +12,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,6 +33,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -32,12 +42,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.appblocker.AppSettingsPreferences
+import com.example.appblocker.lock_clock
 import com.example.appblocker.ui.shared.SecondaryButton
+import com.example.appblocker.ui.shared.formatSeconds
 import com.example.appblocker.ui.theme.TextPrimary
 import com.example.appblocker.ui.theme.TextSecondary
 import com.example.appblocker.ui.theme.Typography
 import kotlinx.coroutines.launch
+import kotlin.time.Clock
+import kotlin.time.Clock.System.now
+import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class, ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(viewModel: SettingsScreenViewModel, onGoBack: () -> Unit) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -63,7 +79,7 @@ fun SettingsScreen(viewModel: SettingsScreenViewModel, onGoBack: () -> Unit) {
                 .padding(top = 8.dp, start = 16.dp, end = 8.dp),
         ) {
             val settings by viewModel.settingsFlow.collectAsStateWithLifecycle(
-                initialValue = AppSettingsPreferences(0, 0)
+                initialValue = AppSettingsPreferences(0, 0, 0, Clock.System.now())
             )
 
             Text(
@@ -79,6 +95,7 @@ fun SettingsScreen(viewModel: SettingsScreenViewModel, onGoBack: () -> Unit) {
                 color = TextSecondary,
                 style = Typography.bodyMedium
             )
+
             Spacer(Modifier.height(4.dp))
 
             var blockSetLockDurationDays by remember { mutableStateOf("0") }
@@ -155,7 +172,8 @@ fun SettingsScreen(viewModel: SettingsScreenViewModel, onGoBack: () -> Unit) {
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(20.dp))
+            HorizontalDivider()
 
             Text("Blocked app lock duration", color = TextPrimary, style = Typography.titleMedium)
             Text(
@@ -240,8 +258,95 @@ fun SettingsScreen(viewModel: SettingsScreenViewModel, onGoBack: () -> Unit) {
                 }
             }
 
+            Spacer(Modifier.height(20.dp))
+            HorizontalDivider()
+
+            Text("Settings lock duration", color = TextPrimary, style = Typography.titleMedium)
+            Text(
+                "Amount of time settings are locked after being edited. Meant to stop user from simply reducing other lock durations to zero when wanting to use a blocked app to get around lock durations",
+                color = TextSecondary,
+                style = Typography.bodyMedium
+            )
+
+            Spacer(Modifier.height(4.dp))
+
+            var settingsLockDurationDays by remember { mutableStateOf("0") }
+            var settingsLockDurationHours by remember { mutableStateOf("0") }
+            var settingsLockDurationMinutes by remember { mutableStateOf("0") }
+
+            LaunchedEffect(settings) {
+                val fv = viewModel.getSettingsLockFieldValuesFromStoredSettings(settings)
+                settingsLockDurationDays = fv.days
+                settingsLockDurationHours = fv.hours
+                settingsLockDurationMinutes = fv.minutes
+            }
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Days")
+                    Spacer(Modifier.height(4.dp))
+                    OutlinedTextField(
+                        settingsLockDurationDays,
+                        { newVal ->
+                            if (newVal.any { !it.isDigit() }) {
+                                return@OutlinedTextField
+                            }
+                            settingsLockDurationDays = newVal
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true,
+                    )
+                }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Hours (0-23)")
+                    Spacer(Modifier.height(4.dp))
+                    OutlinedTextField(
+                        settingsLockDurationHours,
+                        { newVal ->
+                            if (newVal.any { !it.isDigit() }) {
+                                return@OutlinedTextField
+                            }
+
+                            val newValInt = newVal.toIntOrNull()
+                            if (newValInt != null && newValInt > 23) {
+                                return@OutlinedTextField
+                            }
+
+                            settingsLockDurationHours = newVal
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true,
+                    )
+                }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Minutes (0-59)")
+                    Spacer(Modifier.height(4.dp))
+                    OutlinedTextField(
+                        settingsLockDurationMinutes,
+                        { newVal ->
+                            if (newVal.any { !it.isDigit() }) {
+                                return@OutlinedTextField
+                            }
+
+                            val newValInt = newVal.toIntOrNull()
+                            if (newValInt != null && newValInt > 59) {
+                                return@OutlinedTextField
+                            }
+
+                            settingsLockDurationMinutes = newVal
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true,
+                    )
+                }
+            }
+
             Spacer(Modifier.height(12.dp))
             Row {
+                val isLocked =
+                    (now().epochSeconds - settings.lastUpdatedAt.epochSeconds) < settings.settingsLockDurationAfterEdit
                 Button({
                     keyboardController?.hide()
                     val blockDuration = viewModel.getDurationFromFieldValues(
@@ -250,15 +355,19 @@ fun SettingsScreen(viewModel: SettingsScreenViewModel, onGoBack: () -> Unit) {
                         blockSetLockDurationMinutes,
                         blockedAppLockDurationDays,
                         blockedAppLockDurationHours,
-                        blockedAppLockDurationMinutes
+                        blockedAppLockDurationMinutes,
+                        settingsLockDurationDays,
+                        settingsLockDurationHours,
+                        settingsLockDurationMinutes
                     )
-                    Log.d("debugSetting", "block duration to save is $blockDuration")
                     viewModel.updateSettings(blockDuration)
                     scope.launch {
                         snackbarHostState.currentSnackbarData?.dismiss()
                         snackbarHostState.showSnackbar(message = "Settings updated!")
                     }
-                }) {
+                },
+                    enabled = !isLocked
+                    ) {
                     Text("Save settings")
                 }
                 Spacer(Modifier.width(8.dp))
@@ -267,6 +376,24 @@ fun SettingsScreen(viewModel: SettingsScreenViewModel, onGoBack: () -> Unit) {
                     onGoBack()
                 }) {
                     Text("Go back")
+                }
+                if (isLocked) {
+                    Spacer(Modifier.width(24.dp))
+                    val tooltipState = rememberTooltipState(isPersistent = true)
+                    TooltipBox(
+                        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                            TooltipAnchorPosition.Below
+                        ),
+                        tooltip = { PlainTooltip() { Text("Settings cannot be updated for ${formatSeconds(settings.settingsLockDurationAfterEdit)} after an edit") } },
+                        state = tooltipState,
+                    ) {}
+                    Icon(
+                        lock_clock,
+                        "cannot update settings before waiting for min lock duration",
+                        modifier = Modifier
+                            .clickable(onClick = { scope.launch { tooltipState.show() } })
+                            .align(Alignment.CenterVertically)
+                    )
                 }
             }
 
