@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -57,6 +58,7 @@ import kotlin.time.ExperimentalTime
 @Composable
 fun SettingsScreen(viewModel: SettingsScreenViewModel, onGoBack: () -> Unit) {
     val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -363,6 +365,7 @@ fun SettingsScreen(viewModel: SettingsScreenViewModel, onGoBack: () -> Unit) {
                         settingsLockDurationMinutes
                     )
                     viewModel.updateSettings(blockDuration)
+                    focusManager.clearFocus()
                     scope.launch {
                         snackbarHostState.currentSnackbarData?.dismiss()
                         snackbarHostState.showSnackbar(message = "Settings updated!")

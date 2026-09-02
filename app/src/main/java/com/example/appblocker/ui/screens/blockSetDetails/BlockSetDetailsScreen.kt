@@ -60,6 +60,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appblocker.AppBlockItemPreferences
 import com.example.appblocker.AppSettingsPreferences
 import com.example.appblocker.delete
@@ -142,7 +143,8 @@ fun BlockSetDetailsScreen(
                 val secondsElapsed = now().epochSeconds - currBlockSet.lastUpdatedAt.epochSeconds
                 val isLocked =
                     (secondsElapsed) < settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds
-                val lockDurationLeftInSeconds = settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds - secondsElapsed
+                val lockDurationLeftInSeconds =
+                    settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds - secondsElapsed
 
                 OutlinedTextField(
                     nameTextFieldValue,
@@ -324,8 +326,10 @@ fun BlockSetDetailsScreen(
                             val app = currBlockSet.blockList[idx]
 
                             val secondsElapsed = now().epochSeconds - app.addedAt.epochSeconds
-                            val isLocked = (secondsElapsed) < settings.appBlockListLockDurationAfterAddToBlockListInSeconds
-                            val lockDurationLeftInSeconds = settings.appBlockListLockDurationAfterAddToBlockListInSeconds - secondsElapsed
+                            val isLocked =
+                                (secondsElapsed) < settings.appBlockListLockDurationAfterAddToBlockListInSeconds
+                            val lockDurationLeftInSeconds =
+                                settings.appBlockListLockDurationAfterAddToBlockListInSeconds - secondsElapsed
 
                             key(app.appPackageName) {
                                 BlockedAppItem(
@@ -338,7 +342,11 @@ fun BlockSetDetailsScreen(
                                             snackbarHostState.currentSnackbarData?.dismiss()
                                             snackbarHostState.showSnackbar(message = "${app.appName} removed from block list!")
                                         }
-                                    })
+                                    },
+                                    {
+                                        viewModel.lockAppInBlockList(app.appPackageName)
+                                    }
+                                    )
                             }
                         }
                     }
@@ -356,6 +364,7 @@ fun BlockedAppItem(
     isLocked: Boolean,
     blockDurationLeftInSeconds: Long,
     onDelete: () -> Unit,
+    onLock: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val progress = remember { Animatable(0f) }
@@ -388,9 +397,8 @@ fun BlockedAppItem(
                     fontSize = 32.sp,
                     lineHeight = 32.sp,
                     color = if (isLocked) Color.Gray else Color.White,
-                    modifier = Modifier.weight(9f)
+                    modifier = Modifier.weight(3f)
                 )
-                Spacer(Modifier)
                 if (isLocked) {
                     val tooltipState = rememberTooltipState(isPersistent = true)
                     TooltipBox(
@@ -420,6 +428,10 @@ fun BlockedAppItem(
                             .clickable(onClick = { scope.launch { tooltipState.show() } })
                     )
                 } else {
+                    Button(onClick = onLock, modifier = Modifier.weight(1f)) {
+                        Icon(lock_clock, "lock")
+                    }
+                    Spacer(Modifier.width(4.dp))
                     Icon(
                         delete,
                         "remove from block list",
