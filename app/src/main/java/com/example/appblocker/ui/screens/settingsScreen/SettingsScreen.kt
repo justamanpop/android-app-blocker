@@ -345,8 +345,10 @@ fun SettingsScreen(viewModel: SettingsScreenViewModel, onGoBack: () -> Unit) {
 
             Spacer(Modifier.height(12.dp))
             Row {
+                val secondsElapsed = now().epochSeconds - settings.lastUpdatedAt.epochSeconds
                 val isLocked =
-                    (now().epochSeconds - settings.lastUpdatedAt.epochSeconds) < settings.settingsLockDurationAfterEdit
+                    (secondsElapsed) < settings.settingsLockDurationAfterEdit
+                val lockDurationLeftInSeconds = settings.settingsLockDurationAfterEdit - secondsElapsed
                 Button({
                     keyboardController?.hide()
                     val blockDuration = viewModel.getDurationFromFieldValues(
@@ -384,7 +386,7 @@ fun SettingsScreen(viewModel: SettingsScreenViewModel, onGoBack: () -> Unit) {
                         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
                             TooltipAnchorPosition.Below
                         ),
-                        tooltip = { PlainTooltip() { Text("Settings cannot be updated for ${formatSeconds(settings.settingsLockDurationAfterEdit)} after an edit") } },
+                        tooltip = { PlainTooltip() { Text("Settings can be updated in ${formatSeconds(lockDurationLeftInSeconds)}") } },
                         state = tooltipState,
                     ) {}
                     Icon(

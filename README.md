@@ -49,3 +49,4 @@ then follow instructions in app to grant the permission.
 
 ### Planned Changes
 - Add tooltips/improve UX for initial grant permissions modal for each permission
+- Add re-lock button to block set and app block list to allow re-locking for lock duration

@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -132,12 +131,14 @@ fun BlockSetListScreen(
                     val now = Clock.System.now()
                     blockSets.forEach { blockSet ->
                         key(blockSet.id) {
+                            val secondsElapsed = now.epochSeconds - blockSet.lastUpdatedAt.epochSeconds
                             val isLocked =
-                                (now.epochSeconds - blockSet.lastUpdatedAt.epochSeconds) < settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds
+                                (secondsElapsed) < settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds
+                            val lockDurationLeftInSeconds = settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds - secondsElapsed
                             BlockSetListItem(
                                 blockSet,
                                 isLocked,
-                                settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds,
+                                lockDurationLeftInSeconds,
                                 { navigateToBlockSetDetails(blockSet.id) },
                                 { blockSetToDelete = blockSet },
                             )
@@ -172,7 +173,7 @@ fun BlockSetListScreen(
 fun BlockSetListItem(
     blockSet: AppBlockSetPreferences,
     isLocked: Boolean,
-    lockDurationInSeconds: Int,
+    lockDurationLeftInSeconds: Long,
     onClick: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
@@ -247,7 +248,7 @@ fun BlockSetListItem(
                         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
                             TooltipAnchorPosition.Below
                         ),
-                        tooltip = { PlainTooltip() { Text("Block set cannot be deleted for ${formatSeconds(lockDurationInSeconds)} after creation or updating") } },
+                        tooltip = { PlainTooltip() { Text("Block set can be deleted in ${formatSeconds(lockDurationLeftInSeconds)}") } },
                         state = tooltipState,
                     ) {}
                     Icon(

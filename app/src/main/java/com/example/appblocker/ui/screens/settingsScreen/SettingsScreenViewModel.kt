@@ -40,15 +40,15 @@ class SettingsScreenViewModel(
             )
 
     fun getBlockSetLockFieldValuesFromStoredSettings(storedSettings: AppSettingsPreferences): HoursMinutesDaysFieldValues {
-        return HoursMinutesDaysFieldValues.fromSeconds(storedSettings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds)
+        return HoursMinutesDaysFieldValues.fromSeconds(storedSettings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds.toLong())
     }
 
     fun getBlockListLockFieldValuesFromStoredSettings(storedSettings: AppSettingsPreferences): HoursMinutesDaysFieldValues {
-        return HoursMinutesDaysFieldValues.fromSeconds(storedSettings.appBlockListLockDurationAfterAddToBlockListInSeconds)
+        return HoursMinutesDaysFieldValues.fromSeconds(storedSettings.appBlockListLockDurationAfterAddToBlockListInSeconds.toLong())
     }
 
     fun getSettingsLockFieldValuesFromStoredSettings(storedSettings: AppSettingsPreferences): HoursMinutesDaysFieldValues {
-        return HoursMinutesDaysFieldValues.fromSeconds(storedSettings.settingsLockDurationAfterEdit )
+        return HoursMinutesDaysFieldValues.fromSeconds(storedSettings.settingsLockDurationAfterEdit.toLong())
     }
 
     fun getDurationFromFieldValues(
@@ -93,7 +93,7 @@ class SettingsScreenViewModel(
 
 data class HoursMinutesDaysFieldValues(val minutes: String, val hours: String, val days: String) {
     companion object {
-        fun fromSeconds(seconds: Int): HoursMinutesDaysFieldValues {
+        fun fromSeconds(seconds: Long): HoursMinutesDaysFieldValues {
             val days = (seconds / 3600) / 24
             val hours =
                 (seconds- days * 24 * 3600) / 3600

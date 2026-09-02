@@ -2,7 +2,7 @@ package com.example.appblocker.ui.shared
 
 import com.example.appblocker.ui.screens.settingsScreen.HoursMinutesDaysFieldValues
 
-fun formatSeconds(seconds: Int): String {
+fun formatSeconds(seconds: Long): String {
     val hoursMinutesDays = HoursMinutesDaysFieldValues.fromSeconds(seconds)
     val formattedString = buildString {
         if (hoursMinutesDays.days.toInt() != 0) {
