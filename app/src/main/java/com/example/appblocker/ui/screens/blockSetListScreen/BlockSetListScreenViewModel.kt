@@ -43,14 +43,28 @@ class BlockSetListScreenViewModel(val dataStore: DataStore<List<AppBlockSetPrefe
                 initialValue = AppSettingsPreferences(0, 0,0, Clock.System.now())
             )
 
-    fun deleteBlockSet(id: Int) {
+    fun deleteBlockSet(blockSetId: Int) {
         viewModelScope.launch {
             dataStore.updateData { curr ->
-                val entryToDelete = curr.find { bs -> bs.id == id }
+                val entryToDelete = curr.find { bs -> bs.id == blockSetId }
                 if (entryToDelete == null) {
                     curr
                 } else {
                     curr - entryToDelete
+                }
+            }
+        }
+    }
+
+    fun relockBlockSet(blockSetId: Int) {
+        viewModelScope.launch {
+            dataStore.updateData { curr ->
+                curr.map { blockSet ->
+                    if(blockSet.id == blockSetId) {
+                       blockSet.copy(lastUpdatedAt = Clock.System.now())
+                    } else {
+                        blockSet
+                    }
                 }
             }
         }

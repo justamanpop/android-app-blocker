@@ -1,6 +1,5 @@
 package com.example.appblocker.ui.screens.settingsScreen
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -57,6 +57,7 @@ import kotlin.time.ExperimentalTime
 @Composable
 fun SettingsScreen(viewModel: SettingsScreenViewModel, onGoBack: () -> Unit) {
     val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -345,29 +346,34 @@ fun SettingsScreen(viewModel: SettingsScreenViewModel, onGoBack: () -> Unit) {
 
             Spacer(Modifier.height(12.dp))
             Row {
-                val isLocked =
-                    (now().epochSeconds - settings.lastUpdatedAt.epochSeconds) < settings.settingsLockDurationAfterEdit
-                Button({
-                    keyboardController?.hide()
-                    val blockDuration = viewModel.getDurationFromFieldValues(
-                        blockSetLockDurationDays,
-                        blockSetLockDurationHours,
-                        blockSetLockDurationMinutes,
-                        blockedAppLockDurationDays,
-                        blockedAppLockDurationHours,
-                        blockedAppLockDurationMinutes,
-                        settingsLockDurationDays,
-                        settingsLockDurationHours,
-                        settingsLockDurationMinutes
-                    )
-                    viewModel.updateSettings(blockDuration)
-                    scope.launch {
-                        snackbarHostState.currentSnackbarData?.dismiss()
-                        snackbarHostState.showSnackbar(message = "Settings updated!")
-                    }
-                },
-                    enabled = !isLocked
-                    ) {
+                val secondsElapsed = now().epochSeconds - settings.lastUpdatedAt.epochSeconds
+                val isUnlocked =
+                    (secondsElapsed) >= settings.settingsLockDurationAfterEdit
+                val lockDurationLeftInSeconds =
+                    settings.settingsLockDurationAfterEdit - secondsElapsed
+                Button(
+                    {
+                        keyboardController?.hide()
+                        val blockDuration = viewModel.getDurationFromFieldValues(
+                            blockSetLockDurationDays,
+                            blockSetLockDurationHours,
+                            blockSetLockDurationMinutes,
+                            blockedAppLockDurationDays,
+                            blockedAppLockDurationHours,
+                            blockedAppLockDurationMinutes,
+                            settingsLockDurationDays,
+                            settingsLockDurationHours,
+                            settingsLockDurationMinutes
+                        )
+                        viewModel.updateSettings(blockDuration)
+                        focusManager.clearFocus()
+                        scope.launch {
+                            snackbarHostState.currentSnackbarData?.dismiss()
+                            snackbarHostState.showSnackbar(message = "Settings updated!")
+                        }
+                    },
+                    enabled = isUnlocked
+                ) {
                     Text("Save settings")
                 }
                 Spacer(Modifier.width(8.dp))
@@ -377,14 +383,31 @@ fun SettingsScreen(viewModel: SettingsScreenViewModel, onGoBack: () -> Unit) {
                 }) {
                     Text("Go back")
                 }
-                if (isLocked) {
+                if (isUnlocked) {
+                    Spacer(Modifier.width(20.dp))
+                    Button({
+                        viewModel.relockSettings()
+                    }) {
+                        Text("Relock")
+                    }
+                } else {
                     Spacer(Modifier.width(24.dp))
                     val tooltipState = rememberTooltipState(isPersistent = true)
                     TooltipBox(
                         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
                             TooltipAnchorPosition.Below
                         ),
-                        tooltip = { PlainTooltip() { Text("Settings cannot be updated for ${formatSeconds(settings.settingsLockDurationAfterEdit)} after an edit") } },
+                        tooltip = {
+                            PlainTooltip() {
+                                Text(
+                                    "Settings can be updated in ${
+                                        formatSeconds(
+                                            lockDurationLeftInSeconds
+                                        )
+                                    }"
+                                )
+                            }
+                        },
                         state = tooltipState,
                     ) {}
                     Icon(

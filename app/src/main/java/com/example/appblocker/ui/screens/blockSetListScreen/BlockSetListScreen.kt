@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -132,14 +133,19 @@ fun BlockSetListScreen(
                     val now = Clock.System.now()
                     blockSets.forEach { blockSet ->
                         key(blockSet.id) {
+                            val secondsElapsed = now.epochSeconds - blockSet.lastUpdatedAt.epochSeconds
                             val isLocked =
-                                (now.epochSeconds - blockSet.lastUpdatedAt.epochSeconds) < settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds
+                                (secondsElapsed) < settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds
+                            val lockDurationLeftInSeconds = settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds - secondsElapsed
                             BlockSetListItem(
                                 blockSet,
                                 isLocked,
-                                settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds,
+                                lockDurationLeftInSeconds,
                                 { navigateToBlockSetDetails(blockSet.id) },
                                 { blockSetToDelete = blockSet },
+                                {
+                                    viewModel.relockBlockSet(blockSet.id)
+                                }
                             )
                         }
                     }
@@ -172,9 +178,10 @@ fun BlockSetListScreen(
 fun BlockSetListItem(
     blockSet: AppBlockSetPreferences,
     isLocked: Boolean,
-    lockDurationInSeconds: Int,
+    lockDurationLeftInSeconds: Long,
     onClick: () -> Unit,
     onDelete: () -> Unit,
+    onRelock: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val progress = remember { Animatable(0f) }
@@ -206,11 +213,18 @@ fun BlockSetListItem(
                         .weight(9f)
                         .clickable(onClick = onClick)
                 ) {
-                    Text(
-                        text = blockSet.name,
-                        fontSize = 32.sp,
-                        lineHeight = 32.sp,
-                    )
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = blockSet.name,
+                            fontSize = 32.sp,
+                            lineHeight = 32.sp,
+                        )
+                        Spacer(Modifier.width(32.dp))
+
+                        Button(onClick = onRelock) {
+                            Text("Relock")
+                        }
+                    }
                     Spacer(Modifier.height(4.dp))
                     Text(
                         text = "${blockSet.blockList.size} apps",
@@ -247,7 +261,7 @@ fun BlockSetListItem(
                         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
                             TooltipAnchorPosition.Below
                         ),
-                        tooltip = { PlainTooltip() { Text("Block set cannot be deleted for ${formatSeconds(lockDurationInSeconds)} after creation or updating") } },
+                        tooltip = { PlainTooltip() { Text("Block set can be deleted in ${formatSeconds(lockDurationLeftInSeconds)}") } },
                         state = tooltipState,
                     ) {}
                     Icon(

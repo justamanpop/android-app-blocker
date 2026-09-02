@@ -36,7 +36,7 @@ class BlockSetDetailsScreenViewModelFactory(
 @OptIn(ExperimentalTime::class)
 class BlockSetDetailsScreenViewModel(
     val dataStore: DataStore<List<AppBlockSetPreferences>>,
-    val settingsDataStore: DataStore<AppSettingsPreferences>,
+    settingsDataStore: DataStore<AppSettingsPreferences>,
     val blockSetId: Int
 ) :
     ViewModel() {
@@ -53,19 +53,36 @@ class BlockSetDetailsScreenViewModel(
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
-                initialValue = AppSettingsPreferences(0, 0,0, Clock.System.now())
+                initialValue = AppSettingsPreferences(0, 0, 0, Clock.System.now())
             )
 
     @OptIn(ExperimentalTime::class)
     fun removePackageFromBlockList(appPackageName: String) {
         viewModelScope.launch {
             dataStore.updateData { preferences ->
-                preferences.map {
-                    blockSet ->
+                preferences.map { blockSet ->
                     if (blockSet.id == blockSetId) {
-                        blockSet.copy(blockList = blockSet.blockList.filterNot { app ->  app.appPackageName == appPackageName})
+                        blockSet.copy(blockList = blockSet.blockList.filterNot { app -> app.appPackageName == appPackageName })
                     } else {
-                       blockSet
+                        blockSet
+                    }
+                }
+            }
+        }
+    }
+
+    fun lockAppInBlockList(appPackageName: String) {
+        viewModelScope.launch {
+            dataStore.updateData { preferences ->
+                preferences.map { blockSet ->
+                    if (blockSet.id == blockSetId) {
+                        blockSet.copy(blockList = blockSet.blockList.map { app ->
+                            if (app.appPackageName == appPackageName) app.copy(
+                                addedAt = Clock.System.now()
+                            ) else app
+                        })
+                    } else {
+                        blockSet
                     }
                 }
             }
@@ -76,10 +93,14 @@ class BlockSetDetailsScreenViewModel(
     fun updateBlockSet(name: String, activeDays: Map<DayOfWeek, Boolean>, activeTime: String) {
         viewModelScope.launch {
             dataStore.updateData { preferences ->
-                preferences.map {
-                        blockSet ->
+                preferences.map { blockSet ->
                     if (blockSet.id == blockSetId) {
-                        blockSet.copy(name = name, activeDays = activeDays, activeTime = activeTime, lastUpdatedAt = Clock.System.now())
+                        blockSet.copy(
+                            name = name,
+                            activeDays = activeDays,
+                            activeTime = activeTime,
+                            lastUpdatedAt = Clock.System.now()
+                        )
                     } else {
                         blockSet
                     }

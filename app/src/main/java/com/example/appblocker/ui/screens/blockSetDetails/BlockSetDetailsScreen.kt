@@ -10,7 +10,6 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.IconButton
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -112,7 +111,7 @@ fun BlockSetDetailsScreen(
         val localFocusManager = LocalFocusManager.current
 
         val settings by viewModel.settingsFlow.collectAsStateWithLifecycle(
-            initialValue = AppSettingsPreferences(0,0,0, Clock.System.now())
+            initialValue = AppSettingsPreferences(0, 0, 0, Clock.System.now())
         )
 
         Scaffold(
@@ -138,8 +137,14 @@ fun BlockSetDetailsScreen(
                     lineHeight = 32.sp,
                 )
                 Spacer(Modifier.height(8.dp))
+
+
+                val secondsElapsed = now().epochSeconds - currBlockSet.lastUpdatedAt.epochSeconds
                 val isLocked =
-                    (now().epochSeconds - currBlockSet.lastUpdatedAt.epochSeconds) < settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds
+                    (secondsElapsed) < settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds
+                val lockDurationLeftInSeconds =
+                    settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds - secondsElapsed
+
                 OutlinedTextField(
                     nameTextFieldValue,
                     {
@@ -249,13 +254,24 @@ fun BlockSetDetailsScreen(
                         Text("Go back")
                     }
                     if (isLocked) {
+
                         Spacer(Modifier.width(24.dp))
                         val tooltipState = rememberTooltipState(isPersistent = true)
                         TooltipBox(
                             positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
                                 TooltipAnchorPosition.Below
                             ),
-                            tooltip = { PlainTooltip() { Text("Block set cannot be edited for ${formatSeconds(settings.appBlockSetLockDurationAfterCreateOrUpdateBlockSetInSeconds)} seconds after creation or updating") } },
+                            tooltip = {
+                                PlainTooltip() {
+                                    Text(
+                                        "Block set can be edited in ${
+                                            formatSeconds(
+                                                lockDurationLeftInSeconds
+                                            )
+                                        }"
+                                    )
+                                }
+                            },
                             state = tooltipState,
                         ) {}
                         Icon(
@@ -307,16 +323,29 @@ fun BlockSetDetailsScreen(
                     ) {
                         items(currBlockSet.blockList.size) { idx ->
                             val app = currBlockSet.blockList[idx]
+
+                            val secondsElapsed = now().epochSeconds - app.addedAt.epochSeconds
                             val isLocked =
-                                (now().epochSeconds - app.addedAt.epochSeconds) < settings.appBlockListLockDurationAfterAddToBlockListInSeconds
+                                (secondsElapsed) < settings.appBlockListLockDurationAfterAddToBlockListInSeconds
+                            val lockDurationLeftInSeconds =
+                                settings.appBlockListLockDurationAfterAddToBlockListInSeconds - secondsElapsed
+
                             key(app.appPackageName) {
-                                BlockedAppItem(app, isLocked, settings.appBlockListLockDurationAfterAddToBlockListInSeconds, {
-                                    viewModel.removePackageFromBlockList(app.appPackageName)
-                                    scope.launch {
-                                        snackbarHostState.currentSnackbarData?.dismiss()
-                                        snackbarHostState.showSnackbar(message = "${app.appName} removed from block list!")
+                                BlockedAppItem(
+                                    app,
+                                    isLocked,
+                                    lockDurationLeftInSeconds,
+                                    {
+                                        viewModel.removePackageFromBlockList(app.appPackageName)
+                                        scope.launch {
+                                            snackbarHostState.currentSnackbarData?.dismiss()
+                                            snackbarHostState.showSnackbar(message = "${app.appName} removed from block list!")
+                                        }
+                                    },
+                                    {
+                                        viewModel.lockAppInBlockList(app.appPackageName)
                                     }
-                                })
+                                    )
                             }
                         }
                     }
@@ -332,8 +361,9 @@ fun BlockSetDetailsScreen(
 fun BlockedAppItem(
     blockedApp: AppBlockItemPreferences,
     isLocked: Boolean,
-    blockDurationInSeconds: Int,
+    blockDurationLeftInSeconds: Long,
     onDelete: () -> Unit,
+    onRelock: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val progress = remember { Animatable(0f) }
@@ -342,7 +372,7 @@ fun BlockedAppItem(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding( bottom = 8.dp, end = 8.dp),
+            .padding(bottom = 8.dp, end = 8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Box(
@@ -366,16 +396,25 @@ fun BlockedAppItem(
                     fontSize = 32.sp,
                     lineHeight = 32.sp,
                     color = if (isLocked) Color.Gray else Color.White,
-                    modifier = Modifier.weight(9f)
+                    modifier = Modifier.weight(4f)
                 )
-                Spacer(Modifier)
                 if (isLocked) {
                     val tooltipState = rememberTooltipState(isPersistent = true)
                     TooltipBox(
                         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
                             TooltipAnchorPosition.Below
                         ),
-                        tooltip = { PlainTooltip() { Text("Blocked app cannot be removed from list for ${formatSeconds(blockDurationInSeconds)} after being added") } },
+                        tooltip = {
+                            PlainTooltip() {
+                                Text(
+                                    "Blocked app can be removed from list in ${
+                                        formatSeconds(
+                                            blockDurationLeftInSeconds
+                                        )
+                                    }"
+                                )
+                            }
+                        },
                         state = tooltipState,
                     ) {}
                     Icon(
@@ -388,6 +427,10 @@ fun BlockedAppItem(
                             .clickable(onClick = { scope.launch { tooltipState.show() } })
                     )
                 } else {
+                    Button(onClick = onRelock, modifier = Modifier.weight(2f)) {
+                        Text("Relock", fontSize = 12.sp)
+                    }
+                    Spacer(Modifier.width(8.dp))
                     Icon(
                         delete,
                         "remove from block list",
@@ -395,6 +438,7 @@ fun BlockedAppItem(
                             .padding(end = 8.dp)
                             .align(Alignment.CenterVertically)
                             .weight(1f)
+                            .background(Error)
                             .pointerInput(Unit) {
                                 awaitEachGesture {
                                     awaitFirstDown()
