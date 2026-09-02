@@ -32,22 +32,13 @@ fun DeleteConfirmationModal(
                     onDelete()
                     onDismissRequest()
                 },
-                colors = ButtonDefaults.textButtonColors(
-                    containerColor = AccentLight,
-                    contentColor = OnPrimary
-                ),
             ) {
                 Text("Delete")
             }
         },
         dismissButton = {
-            Button(
+            SecondaryButton(
                 onClick = onDismissRequest,
-                colors = ButtonDefaults.textButtonColors(
-                    containerColor = AccentDark,
-                    contentColor = TextSecondary
-                ),
-                border = BorderStroke(1.dp, Border)
             ) {
                 Text("Cancel")
             }

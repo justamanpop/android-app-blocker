@@ -134,9 +134,6 @@ fun App(
                 Spacer(Modifier.width(8.dp))
                 Text("Settings")
             }
-            Button(onClick = {onNavigateToManageBlockSets()}){
-                Text("temp")
-            }
         }
     }
 }

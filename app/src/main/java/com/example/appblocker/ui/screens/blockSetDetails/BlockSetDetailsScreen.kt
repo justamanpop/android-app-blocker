@@ -60,7 +60,6 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appblocker.AppBlockItemPreferences
 import com.example.appblocker.AppSettingsPreferences
 import com.example.appblocker.delete
@@ -364,7 +363,7 @@ fun BlockedAppItem(
     isLocked: Boolean,
     blockDurationLeftInSeconds: Long,
     onDelete: () -> Unit,
-    onLock: () -> Unit,
+    onRelock: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val progress = remember { Animatable(0f) }
@@ -397,7 +396,7 @@ fun BlockedAppItem(
                     fontSize = 32.sp,
                     lineHeight = 32.sp,
                     color = if (isLocked) Color.Gray else Color.White,
-                    modifier = Modifier.weight(3f)
+                    modifier = Modifier.weight(4f)
                 )
                 if (isLocked) {
                     val tooltipState = rememberTooltipState(isPersistent = true)
@@ -428,10 +427,10 @@ fun BlockedAppItem(
                             .clickable(onClick = { scope.launch { tooltipState.show() } })
                     )
                 } else {
-                    Button(onClick = onLock, modifier = Modifier.weight(1f)) {
-                        Icon(lock_clock, "lock")
+                    Button(onClick = onRelock, modifier = Modifier.weight(2f)) {
+                        Text("Relock", fontSize = 12.sp)
                     }
-                    Spacer(Modifier.width(4.dp))
+                    Spacer(Modifier.width(8.dp))
                     Icon(
                         delete,
                         "remove from block list",
@@ -439,6 +438,7 @@ fun BlockedAppItem(
                             .padding(end = 8.dp)
                             .align(Alignment.CenterVertically)
                             .weight(1f)
+                            .background(Error)
                             .pointerInput(Unit) {
                                 awaitEachGesture {
                                     awaitFirstDown()

@@ -36,7 +36,7 @@ class SettingsScreenViewModel(
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
-                initialValue = AppSettingsPreferences(0, 0, 0,Clock.System.now() )
+                initialValue = AppSettingsPreferences(0, 0, 0, Clock.System.now())
             )
 
     fun getBlockSetLockFieldValuesFromStoredSettings(storedSettings: AppSettingsPreferences): HoursMinutesDaysFieldValues {
@@ -89,6 +89,12 @@ class SettingsScreenViewModel(
             }
         }
     }
+
+    fun relockSettings() {
+        viewModelScope.launch {
+            dataStore.updateData { preferences -> preferences.copy(lastUpdatedAt = Clock.System.now()) }
+        }
+    }
 }
 
 data class HoursMinutesDaysFieldValues(val minutes: String, val hours: String, val days: String) {
@@ -96,9 +102,9 @@ data class HoursMinutesDaysFieldValues(val minutes: String, val hours: String, v
         fun fromSeconds(seconds: Long): HoursMinutesDaysFieldValues {
             val days = (seconds / 3600) / 24
             val hours =
-                (seconds- days * 24 * 3600) / 3600
+                (seconds - days * 24 * 3600) / 3600
             val minutes =
-                ((seconds - days * 24 * 3600) - (hours * 3600))/60
+                ((seconds - days * 24 * 3600) - (hours * 3600)) / 60
             return HoursMinutesDaysFieldValues(
                 days = days.toString(),
                 hours = hours.toString(),

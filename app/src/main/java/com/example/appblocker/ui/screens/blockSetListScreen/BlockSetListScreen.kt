@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -141,6 +143,9 @@ fun BlockSetListScreen(
                                 lockDurationLeftInSeconds,
                                 { navigateToBlockSetDetails(blockSet.id) },
                                 { blockSetToDelete = blockSet },
+                                {
+                                    viewModel.relockBlockSet(blockSet.id)
+                                }
                             )
                         }
                     }
@@ -176,6 +181,7 @@ fun BlockSetListItem(
     lockDurationLeftInSeconds: Long,
     onClick: () -> Unit,
     onDelete: () -> Unit,
+    onRelock: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val progress = remember { Animatable(0f) }
@@ -207,11 +213,18 @@ fun BlockSetListItem(
                         .weight(9f)
                         .clickable(onClick = onClick)
                 ) {
-                    Text(
-                        text = blockSet.name,
-                        fontSize = 32.sp,
-                        lineHeight = 32.sp,
-                    )
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = blockSet.name,
+                            fontSize = 32.sp,
+                            lineHeight = 32.sp,
+                        )
+                        Spacer(Modifier.width(32.dp))
+
+                        Button(onClick = onRelock) {
+                            Text("Relock")
+                        }
+                    }
                     Spacer(Modifier.height(4.dp))
                     Text(
                         text = "${blockSet.blockList.size} apps",

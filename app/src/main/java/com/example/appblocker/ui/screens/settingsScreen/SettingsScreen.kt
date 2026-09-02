@@ -1,6 +1,5 @@
 package com.example.appblocker.ui.screens.settingsScreen
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -348,31 +347,33 @@ fun SettingsScreen(viewModel: SettingsScreenViewModel, onGoBack: () -> Unit) {
             Spacer(Modifier.height(12.dp))
             Row {
                 val secondsElapsed = now().epochSeconds - settings.lastUpdatedAt.epochSeconds
-                val isLocked =
-                    (secondsElapsed) < settings.settingsLockDurationAfterEdit
-                val lockDurationLeftInSeconds = settings.settingsLockDurationAfterEdit - secondsElapsed
-                Button({
-                    keyboardController?.hide()
-                    val blockDuration = viewModel.getDurationFromFieldValues(
-                        blockSetLockDurationDays,
-                        blockSetLockDurationHours,
-                        blockSetLockDurationMinutes,
-                        blockedAppLockDurationDays,
-                        blockedAppLockDurationHours,
-                        blockedAppLockDurationMinutes,
-                        settingsLockDurationDays,
-                        settingsLockDurationHours,
-                        settingsLockDurationMinutes
-                    )
-                    viewModel.updateSettings(blockDuration)
-                    focusManager.clearFocus()
-                    scope.launch {
-                        snackbarHostState.currentSnackbarData?.dismiss()
-                        snackbarHostState.showSnackbar(message = "Settings updated!")
-                    }
-                },
-                    enabled = !isLocked
-                    ) {
+                val isUnlocked =
+                    (secondsElapsed) >= settings.settingsLockDurationAfterEdit
+                val lockDurationLeftInSeconds =
+                    settings.settingsLockDurationAfterEdit - secondsElapsed
+                Button(
+                    {
+                        keyboardController?.hide()
+                        val blockDuration = viewModel.getDurationFromFieldValues(
+                            blockSetLockDurationDays,
+                            blockSetLockDurationHours,
+                            blockSetLockDurationMinutes,
+                            blockedAppLockDurationDays,
+                            blockedAppLockDurationHours,
+                            blockedAppLockDurationMinutes,
+                            settingsLockDurationDays,
+                            settingsLockDurationHours,
+                            settingsLockDurationMinutes
+                        )
+                        viewModel.updateSettings(blockDuration)
+                        focusManager.clearFocus()
+                        scope.launch {
+                            snackbarHostState.currentSnackbarData?.dismiss()
+                            snackbarHostState.showSnackbar(message = "Settings updated!")
+                        }
+                    },
+                    enabled = isUnlocked
+                ) {
                     Text("Save settings")
                 }
                 Spacer(Modifier.width(8.dp))
@@ -382,14 +383,31 @@ fun SettingsScreen(viewModel: SettingsScreenViewModel, onGoBack: () -> Unit) {
                 }) {
                     Text("Go back")
                 }
-                if (isLocked) {
+                if (isUnlocked) {
+                    Spacer(Modifier.width(20.dp))
+                    Button({
+                        viewModel.relockSettings()
+                    }) {
+                        Text("Relock")
+                    }
+                } else {
                     Spacer(Modifier.width(24.dp))
                     val tooltipState = rememberTooltipState(isPersistent = true)
                     TooltipBox(
                         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
                             TooltipAnchorPosition.Below
                         ),
-                        tooltip = { PlainTooltip() { Text("Settings can be updated in ${formatSeconds(lockDurationLeftInSeconds)}") } },
+                        tooltip = {
+                            PlainTooltip() {
+                                Text(
+                                    "Settings can be updated in ${
+                                        formatSeconds(
+                                            lockDurationLeftInSeconds
+                                        )
+                                    }"
+                                )
+                            }
+                        },
                         state = tooltipState,
                     ) {}
                     Icon(
